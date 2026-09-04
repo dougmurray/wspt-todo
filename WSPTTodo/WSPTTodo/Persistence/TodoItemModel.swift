@@ -17,8 +17,8 @@ import WSPTCore
 final class TodoItemModel {
     var id: UUID = UUID()
     var title: String = ""
-    /// Estimated time to complete the task, in hours.
-    var estimatedHours: Double = 1.0
+    /// Estimated time to complete the task, in minutes.
+    var estimatedMinutes: Double = 30.0
     /// Backing storage for `importance`; kept as a plain Int for
     /// CloudKit-friendliness.
     var importanceRaw: Int = Importance.normal.rawValue
@@ -27,14 +27,14 @@ final class TodoItemModel {
 
     init(
         title: String,
-        estimatedHours: Double,
+        estimatedMinutes: Double,
         importance: Importance,
         isDone: Bool = false,
         createdAt: Date = .now
     ) {
         self.id = UUID()
         self.title = title
-        self.estimatedHours = estimatedHours
+        self.estimatedMinutes = estimatedMinutes
         self.importanceRaw = importance.rawValue
         self.isDone = isDone
         self.createdAt = createdAt
@@ -51,7 +51,7 @@ final class TodoItemModel {
         TodoItem(
             id: id,
             title: title,
-            estimatedHours: estimatedHours,
+            estimatedMinutes: estimatedMinutes,
             importance: importance,
             isDone: isDone,
             createdAt: createdAt

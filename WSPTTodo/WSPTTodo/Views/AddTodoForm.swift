@@ -1,14 +1,14 @@
 import SwiftUI
 import WSPTCore
 
-/// The add-task form: task name, estimated hours, importance picker.
+/// The add-task form: task name, estimated minutes, importance picker.
 /// Mirrors the `.panel` form in docs/wspt-todo.html (lines 261-286),
 /// including its validation messages (lines 412-413).
 struct AddTodoForm: View {
-    var onAdd: (_ title: String, _ hours: Double, _ importance: Importance) -> Void
+    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
 
     @State private var title: String = ""
-    @State private var hoursText: String = ""
+    @State private var minutesText: String = ""
     @State private var importance: Importance = .normal
     @State private var errorMessage: String?
 
@@ -19,9 +19,9 @@ struct AddTodoForm: View {
                 .onSubmit(submit)
 
             HStack(spacing: 10) {
-                TextField("Estimated time (hrs)", text: $hoursText)
+                TextField("Estimated time (min)", text: $minutesText)
                     #if os(iOS)
-                    .keyboardType(.decimalPad)
+                    .keyboardType(.numberPad)
                     #endif
                     .textFieldStyle(.roundedBorder)
                     .onSubmit(submit)
@@ -58,16 +58,16 @@ struct AddTodoForm: View {
             errorMessage = "Enter a task name first."
             return
         }
-        guard let hours = Double(hoursText), hours > 0 else {
+        guard let minutes = Double(minutesText), minutes > 0 else {
             errorMessage = "Enter an estimated time greater than zero."
             return
         }
 
         errorMessage = nil
-        onAdd(trimmedTitle, hours, importance)
+        onAdd(trimmedTitle, minutes, importance)
 
         title = ""
-        hoursText = ""
+        minutesText = ""
         importance = .normal
     }
 }

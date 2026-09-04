@@ -55,7 +55,9 @@ struct ContentView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
+            #if os(iOS)
             .toolbar(.hidden, for: .navigationBar)
+            #endif
         }
         #if os(macOS)
         .frame(minWidth: 420, minHeight: 480)
@@ -86,8 +88,8 @@ struct ContentView: View {
         }
     }
 
-    private func addItem(title: String, hours: Double, importance: Importance) {
-        let newItem = TodoItemModel(title: title, estimatedHours: hours, importance: importance)
+    private func addItem(title: String, minutes: Double, importance: Importance) {
+        let newItem = TodoItemModel(title: title, estimatedMinutes: minutes, importance: importance)
         modelContext.insert(newItem)
         try? modelContext.save()
     }

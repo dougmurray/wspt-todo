@@ -5,21 +5,19 @@ import Testing
 @Suite("PriorityScorer")
 struct PriorityScorerTests {
 
-    // MARK: - score(importance:estimatedHours:)
+    // MARK: - score(importance:estimatedMinutes:)
 
     @Test("score formula matches importance / (2 × time)")
     func scoreFormula() {
-        // 30 min "take recycling out" example from python-logic/tester.ipynb,
-        // adapted to hours and the new 1-5/2x formula.
-        #expect(PriorityScorer.score(importance: .critical, estimatedHours: 0.5) == 5.0)
-        #expect(PriorityScorer.score(importance: .normal, estimatedHours: 1.0) == 1.5)
-        #expect(PriorityScorer.score(importance: .trivial, estimatedHours: 2.0) == 0.25)
+        #expect(PriorityScorer.score(importance: .critical, estimatedMinutes: 30) == 5.0 / 60.0)
+        #expect(PriorityScorer.score(importance: .normal, estimatedMinutes: 60) == 0.025)
+        #expect(PriorityScorer.score(importance: .trivial, estimatedMinutes: 120) == 1.0 / 240)
     }
 
     @Test("zero or negative time scores as infinity")
     func zeroTimeGuard() {
-        #expect(PriorityScorer.score(importance: .high, estimatedHours: 0) == .infinity)
-        #expect(PriorityScorer.score(importance: .high, estimatedHours: -1) == .infinity)
+        #expect(PriorityScorer.score(importance: .high, estimatedMinutes: 0) == .infinity)
+        #expect(PriorityScorer.score(importance: .high, estimatedMinutes: -1) == .infinity)
     }
 
     @Test("importance raw values map 1-5 to the correct labels")
@@ -35,9 +33,9 @@ struct PriorityScorerTests {
 
     @Test("open items are sorted descending by score")
     func ranksDescendingByScore() {
-        let low = TodoItem(title: "low score", estimatedHours: 4, importance: .trivial)
-        let high = TodoItem(title: "high score", estimatedHours: 0.5, importance: .critical)
-        let mid = TodoItem(title: "mid score", estimatedHours: 1, importance: .normal)
+        let low = TodoItem(title: "low score", estimatedMinutes: 240, importance: .trivial)
+        let high = TodoItem(title: "high score", estimatedMinutes: 30, importance: .critical)
+        let mid = TodoItem(title: "mid score", estimatedMinutes: 60, importance: .normal)
 
         let ranked = PriorityScorer.rank([low, high, mid])
 
@@ -49,18 +47,18 @@ struct PriorityScorerTests {
         let now = Date()
         let older = TodoItem(
             title: "older",
-            estimatedHours: 1,
+            estimatedMinutes: 60,
             importance: .normal,
             createdAt: now.addingTimeInterval(-100)
         )
         let newer = TodoItem(
             title: "newer",
-            estimatedHours: 1,
+            estimatedMinutes: 60,
             importance: .normal,
             createdAt: now
         )
 
-        // Same score (both normal/1hr), inserted with newer first to prove
+        // Same score (both normal/60min), inserted with newer first to prove
         // tie-break reorders rather than preserving input order.
         let ranked = PriorityScorer.rank([newer, older])
 
@@ -70,17 +68,17 @@ struct PriorityScorerTests {
     @Test("done items always sink below open items, sorted by createdAt")
     func doneItemsSinkBelowOpenSortedByCreatedAt() {
         let now = Date()
-        let openLowScore = TodoItem(title: "open low", estimatedHours: 10, importance: .trivial)
+        let openLowScore = TodoItem(title: "open low", estimatedMinutes: 600, importance: .trivial)
         let doneNewer = TodoItem(
             title: "done newer",
-            estimatedHours: 0.25,
+            estimatedMinutes: 15,
             importance: .critical,
             isDone: true,
             createdAt: now
         )
         let doneOlder = TodoItem(
             title: "done older",
-            estimatedHours: 0.25,
+            estimatedMinutes: 15,
             importance: .critical,
             isDone: true,
             createdAt: now.addingTimeInterval(-100)
@@ -96,9 +94,9 @@ struct PriorityScorerTests {
     @Test("rank is idempotent across repeated calls")
     func rankIsIdempotent() {
         let items = [
-            TodoItem(title: "a", estimatedHours: 1, importance: .high),
-            TodoItem(title: "b", estimatedHours: 2, importance: .low),
-            TodoItem(title: "c", estimatedHours: 0.5, importance: .critical, isDone: true)
+            TodoItem(title: "a", estimatedMinutes: 60, importance: .high),
+            TodoItem(title: "b", estimatedMinutes: 120, importance: .low),
+            TodoItem(title: "c", estimatedMinutes: 30, importance: .critical, isDone: true)
         ]
 
         let first = PriorityScorer.rank(items)

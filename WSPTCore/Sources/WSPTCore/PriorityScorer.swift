@@ -15,14 +15,14 @@ public enum PriorityScorer {
     /// The WSPT priority score for a single item's importance/time pair.
     /// A non-positive estimated time is treated as "instant" and scores
     /// `.infinity`, matching the guard in docs/wspt-todo.html:300-303.
-    public static func score(importance: Importance, estimatedHours: Double) -> Double {
-        guard estimatedHours > 0 else { return .infinity }
-        return Double(importance.rawValue) / (2.0 * estimatedHours)
+    public static func score(importance: Importance, estimatedMinutes: Double) -> Double {
+        guard estimatedMinutes > 0 else { return .infinity }
+        return Double(importance.rawValue) / (2.0 * estimatedMinutes)
     }
 
     /// Convenience overload for a single `TodoItem`.
     public static func score(for item: TodoItem) -> Double {
-        score(importance: item.importance, estimatedHours: item.estimatedHours)
+        score(importance: item.importance, estimatedMinutes: item.estimatedMinutes)
     }
 
     /// Ranks items for display: open items first (highest score first, ties

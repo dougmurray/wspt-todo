@@ -17,12 +17,12 @@ struct TodoRow: View {
         score.isInfinite ? "∞" : String(format: "%.2f", score)
     }
 
-    private var hoursLabel: String {
-        let hrs = item.estimatedHours
-        let formatted = hrs.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", hrs)
-            : String(format: "%.2f", hrs)
-        return "\(formatted) hr\(hrs == 1 ? "" : "s")"
+    private var minutesLabel: String {
+        let mins = item.estimatedMinutes
+        let formatted = mins.truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", mins)
+            : String(format: "%.2f", mins)
+        return "\(formatted) min\(mins == 1 ? "" : "s")"
     }
 
     var body: some View {
@@ -46,7 +46,7 @@ struct TodoRow: View {
                     .foregroundStyle(item.isDone ? .secondary : .primary)
 
                 HStack(spacing: 10) {
-                    Label(hoursLabel, systemImage: "clock")
+                    Label(minutesLabel, systemImage: "clock")
                     Label(item.importance.label, systemImage: "flag")
                 }
                 .font(.caption)
