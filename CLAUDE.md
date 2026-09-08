@@ -13,9 +13,9 @@ reference prototype of the sort; `docs/wspt-todo.html` is a working HTML/JS prot
 form, score-badge rows, done/delete actions, empty state) the SwiftUI views mirror line-for-line —
 consult it when a view's exact layout/behavior is ambiguous.
 
-v1 scope is intentionally pure WSPT only — no aging/starvation logic and no CloudKit sync. Both are
-explicit v2 items; the domain model and persistence model are already shaped so they can be added
-without a rework (see "Design constraints to preserve" below).
+The WSPT ranking itself is intentionally pure — no aging/starvation logic yet; that's a v2 item, and
+`PriorityScorer.rank(_:)` is shaped so it can be added without a rework (see "Design constraints to
+preserve" below). Persistence now syncs via CloudKit (private database) — see "CloudKit sync" below.
 
 ## Repository layout
 
@@ -89,14 +89,37 @@ descriptors can't express the WSPT formula, the zero-time infinity guard, or the
 this recompute-on-every-mutation approach (per `docs/overvall-plan.md`) is intentional, not a
 missed optimization — scores are never stored.
 
-**Design constraints to preserve** (for v2 CloudKit/aging support):
+**Design constraints to preserve:**
 - `TodoItemModel` has no `@Attribute(.unique)` fields and every stored property has a literal
   default value — both are CloudKit `ModelConfiguration` requirements. Preserve this on any new
-  field.
+  field, or sync silently breaks.
 - `Importance` is backed by a plain `Int` raw value (`importanceRaw` on the model) rather than a
   native enum column, for CloudKit-friendliness.
 - `PriorityScorer.rank(_:)` is a pure function over `[TodoItem]` with no external state — an aging
-  term or due-date override should extend the formula here, not bolt logic onto the view layer.
+  term or due-date override (the remaining v2 item) should extend the formula here, not bolt logic
+  onto the view layer.
+
+## CloudKit sync
+
+`WSPTTodoApp.swift` builds `sharedModelContainer` with an explicit `ModelConfiguration(cloudKitDatabase:
+.private("iCloud.com.douglassmurray.wspttodo"))` rather than the plain `.modelContainer(for:)`
+shorthand, so todo items sync across a signed-in user's devices via the private CloudKit database.
+
+This requires a **paid Apple Developer Program membership** — a free "Personal Team" cannot use the
+iCloud capability at all (Xcode will refuse to create the provisioning profile). `project.yml` pins
+`DEVELOPMENT_TEAM` to the paid team's ID, and declares the entitlement (`WSPTTodo/project.yml`'s
+`entitlements:` block → generates `Generated/WSPTTodo.entitlements`) for
+`com.apple.developer.icloud-services: [CloudKit]` against container
+`iCloud.com.douglassmurray.wspttodo`, plus `aps-environment` and `UIBackgroundModes:
+remote-notification` for background push-driven sync.
+
+Building with `xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration` lets
+Xcode's build system register the device and the CloudKit container against that team automatically
+— no Xcode GUI signing step needed once `DEVELOPMENT_TEAM` is set correctly.
+
+Without a signed-in iCloud account on the runtime device/Simulator, SwiftData logs a `CKAccountStatus
+NoAccount` CloudKit setup error and falls back to local-only storage rather than crashing — that's
+expected, not a bug, when testing on a fresh Simulator.
 
 **Platform-specific UI branches** use `#if os(iOS)` / `#if os(macOS)` inline within shared view
 files (see `ContentView.swift`, `TodoRow.swift`, `AddTodoForm.swift`) rather than separate
