@@ -2,7 +2,7 @@
 User inputs the task, time, and importance level. 
 The time is in minutes, while the importance is based on the word list:
 Trivial, Low, Normal, High, or Critical
-with them corresponding to the numbers 1, 2, 3, 5, 8 respectively.
+with them corresponding to the numbers 1, 2, 3, 4, 5 respectively.
 These values are stored as the importance value for the task.
 """
 
