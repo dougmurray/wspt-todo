@@ -9,7 +9,7 @@ struct WSPTTodoApp: App {
         }
         .modelContainer(sharedModelContainer)
         #if os(macOS)
-        .defaultSize(width: 480, height: 620)
+        .defaultSize(width: 960, height: 680)
         #endif
     }
 }

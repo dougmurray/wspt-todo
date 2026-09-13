@@ -2,12 +2,29 @@ import SwiftUI
 import SwiftData
 import WSPTCore
 
-/// Root view. Mirrors the overall page structure of docs/wspt-todo.html:
-/// header + formula badge, add form, open-count header, ranked list /
-/// empty state.
+#if os(macOS)
+/// Which of the two macOS tabs — ranked list or scatter plot — is showing.
+enum PriorityViewMode {
+    case list
+    case plot
+}
+#endif
+
+/// Root view. On iOS this mirrors the overall page structure of
+/// docs/wspt-todo.html: header + formula badge, add form, open-count
+/// header, ranked list / empty state. On macOS it instead follows the
+/// Claude Design mockup ("WSPT To Do App UI" project): a "Today" header,
+/// a List/Plot tab switcher, and either `PriorityListView` or
+/// `PriorityPlotView` for the body — see CLAUDE.md's platform-branch
+/// convention.
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItemModel.createdAt) private var items: [TodoItemModel]
+
+    #if os(macOS)
+    @State private var viewMode: PriorityViewMode = .list
+    @State private var selectedID: UUID?
+    #endif
 
     /// Ranks the fetched models via `PriorityScorer.rank(_:)` — the score is
     /// computed, not stored, and the full list is re-ranked on every view
@@ -25,6 +42,114 @@ struct ContentView: View {
     }
 
     var body: some View {
+        #if os(macOS)
+        macBody
+        #else
+        iosBody
+        #endif
+    }
+
+    // MARK: - macOS
+
+    #if os(macOS)
+    private var openTotalMinutes: Double {
+        items.filter { !$0.isDone }.reduce(0) { $0 + $1.estimatedMinutes }
+    }
+
+    private var macBody: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            macHeader
+            if items.isEmpty {
+                EmptyStateView()
+                    .frame(maxWidth: .infinity)
+            } else if viewMode == .list {
+                PriorityListView(
+                    items: rankedItems,
+                    onToggleDone: toggleDone,
+                    onDelete: delete,
+                    onSave: updateItem,
+                    onAdd: addItem
+                )
+            } else {
+                PriorityPlotView(
+                    items: rankedItems,
+                    selectedID: $selectedID,
+                    onToggleDone: toggleDone,
+                    onDelete: delete,
+                    onSave: updateItem
+                )
+            }
+        }
+        .padding(28)
+        .frame(minWidth: 760, minHeight: 600)
+        .background(MacPriorityTheme.background)
+        // The mockup's palette is fixed-light (warm cream cards, dark ink
+        // text) rather than adapting to the system appearance. Without
+        // this, a system in Dark Mode renders text fields' default label
+        // color as white-on-cream — invisible.
+        .preferredColorScheme(.light)
+    }
+
+    private var macHeader: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 24) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Today")
+                    .font(MacPriorityTheme.serif(27))
+                    .foregroundStyle(MacPriorityTheme.ink)
+                Text(macSubtitle)
+                    .font(MacPriorityTheme.sans(13))
+                    .foregroundStyle(MacPriorityTheme.ink(0.52))
+            }
+            Spacer()
+            if !items.isEmpty {
+                viewModeSwitcher
+            }
+        }
+    }
+
+    private var macSubtitle: String {
+        let taskWord = openCount == 1 ? "One task" : "\(openCount) tasks"
+        let duration = MacPriorityTheme.formattedDuration(minutes: openTotalMinutes)
+        return "\(taskWord) · \(duration) estimated · priority = importance ÷ (2 × time)"
+    }
+
+    private var viewModeSwitcher: some View {
+        HStack(spacing: 4) {
+            switcherButton("List", mode: .list)
+            switcherButton("Plot", mode: .plot)
+        }
+        .padding(4)
+        .background(MacPriorityTheme.subtleCard)
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(MacPriorityTheme.ink(0.1)))
+    }
+
+    private func switcherButton(_ title: String, mode: PriorityViewMode) -> some View {
+        let isSelected = viewMode == mode
+        return Button(action: { viewMode = mode }) {
+            Text(title)
+                .font(MacPriorityTheme.sans(12.5, weight: .medium))
+                .foregroundStyle(isSelected ? MacPriorityTheme.ink : MacPriorityTheme.ink(0.55))
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+                .background(isSelected ? MacPriorityTheme.card : Color.clear)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func updateItem(_ item: TodoItemModel, title: String, minutes: Double, importance: Importance) {
+        item.title = title
+        item.estimatedMinutes = minutes
+        item.importance = importance
+        try? modelContext.save()
+    }
+    #endif
+
+    // MARK: - iOS
+
+    #if os(iOS)
+    private var iosBody: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 header
@@ -55,13 +180,8 @@ struct ContentView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            #if os(iOS)
             .toolbar(.hidden, for: .navigationBar)
-            #endif
         }
-        #if os(macOS)
-        .frame(minWidth: 420, minHeight: 480)
-        #endif
     }
 
     private var header: some View {
@@ -87,6 +207,9 @@ struct ContentView: View {
             Spacer()
         }
     }
+    #endif
+
+    // MARK: - Mutations
 
     private func addItem(title: String, minutes: Double, importance: Importance) {
         let newItem = TodoItemModel(title: title, estimatedMinutes: minutes, importance: importance)
