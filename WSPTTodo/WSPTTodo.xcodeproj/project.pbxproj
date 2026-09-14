@@ -10,6 +10,7 @@
 		07665E3DF994483DE2F56C73 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64899B35FC48D3982F06F531 /* EmptyStateView.swift */; };
 		12ED6F792AC5C78A223F4026 /* EditTaskPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */; };
 		211192880286D09872439158 /* TodoItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B87898EFE9894DF363F90AC /* TodoItemModel.swift */; };
+		218D9CE9FD50E7DE57A21B91 /* IOSPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */; };
 		24A76ED342B3B713C9977C4A /* WSPTTodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */; };
 		3669E953321DFFDFA258BA6C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD2B12CCC45DE49FFE7493B /* ContentView.swift */; };
 		386DED8AE0380F15AFFE7EF5 /* MacPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */; };
@@ -31,6 +32,7 @@
 		EFA46406CEF1163984604A69 /* AddTodoForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */; };
 		F3F3A831E46E7D0E45E68289 /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */; };
 		F424D3935175801EBFC83B81 /* PriorityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58810AB13C7047D4CFA43ECA /* PriorityListView.swift */; };
+		FFDC97C727F86701FA21BE2E /* IOSPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +49,7 @@
 		841F4FE1B5066CAD485B227C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A006C6C0A97E68CDEEF9DA8C /* WSPTTodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WSPTTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A54F7B3501B61A250E9C199D /* WSPTTodo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WSPTTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPriorityTheme.swift; sourceTree = "<group>"; };
 		C7D70A8107196B36E9DEDFBC /* WSPTCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WSPTCore; path = ../WSPTCore; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -93,6 +96,7 @@
 				5CD2B12CCC45DE49FFE7493B /* ContentView.swift */,
 				1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */,
 				64899B35FC48D3982F06F531 /* EmptyStateView.swift */,
+				BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */,
 				4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */,
 				58810AB13C7047D4CFA43ECA /* PriorityListView.swift */,
 				56184DCBD5920D74E356E8B3 /* PriorityPlotView.swift */,
@@ -243,6 +247,7 @@
 				3669E953321DFFDFA258BA6C /* ContentView.swift in Sources */,
 				12ED6F792AC5C78A223F4026 /* EditTaskPopover.swift in Sources */,
 				07665E3DF994483DE2F56C73 /* EmptyStateView.swift in Sources */,
+				FFDC97C727F86701FA21BE2E /* IOSPriorityTheme.swift in Sources */,
 				386DED8AE0380F15AFFE7EF5 /* MacPriorityTheme.swift in Sources */,
 				B6E93D2F43A4061F7BC51826 /* PriorityListView.swift in Sources */,
 				418842A4F0EE50EE484E066F /* PriorityPlotView.swift in Sources */,
@@ -260,6 +265,7 @@
 				609174E3839CEE732D686BDE /* ContentView.swift in Sources */,
 				948FDA0A766D98610D301F5E /* EditTaskPopover.swift in Sources */,
 				9B8091977E7CC809885B434C /* EmptyStateView.swift in Sources */,
+				218D9CE9FD50E7DE57A21B91 /* IOSPriorityTheme.swift in Sources */,
 				92F0D61F958C6E7C47760E49 /* MacPriorityTheme.swift in Sources */,
 				F424D3935175801EBFC83B81 /* PriorityListView.swift in Sources */,
 				C30B91ACD77C24B853E26475 /* PriorityPlotView.swift in Sources */,

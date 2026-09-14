@@ -1,11 +1,19 @@
+#if os(iOS)
 import SwiftUI
 import WSPTCore
 
-/// A single ranked row: score badge, title, meta line, done/delete actions.
-/// Mirrors `.item` / `.score-col` / `.item-body` / `.item-actions` in
-/// docs/wspt-todo.html (lines 157-249).
+/// A single open, ranked task rendered as a full-bleed colored band — mirrors
+/// option 6a's stacked queue in the Claude Design mockup ("WSPT To Do App
+/// UI" project, turn 6): no card, no divider, just a band whose background
+/// intensity falls with rank (`IOSPriorityTheme.rowColor`) and title/meta/
+/// score all in white. Swipe actions (not shown in the mockup, which is a
+/// static screenshot) preserve done/delete without adding any visible chrome.
 struct TodoRow: View {
     let item: TodoItemModel
+    /// This task's position among open tasks (0 = top of the queue) — feeds
+    /// `IOSPriorityTheme.rowColor` so intensity falls smoothly with rank.
+    let rankIndex: Int
+    let totalOpen: Int
     var onToggleDone: () -> Void
     var onDelete: () -> Void
 
@@ -13,86 +21,76 @@ struct TodoRow: View {
         PriorityScorer.score(for: item.asTodoItem)
     }
 
-    private var formattedScore: String {
-        score.isInfinite ? "∞" : String(format: "%.2f", score)
-    }
-
-    private var minutesLabel: String {
-        let mins = item.estimatedMinutes
-        let formatted = mins.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", mins)
-            : String(format: "%.2f", mins)
-        return "\(formatted) min\(mins == 1 ? "" : "s")"
-    }
-
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 2) {
-                Text(formattedScore)
-                    .font(.system(.callout, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(.teal)
-                Text("score")
-                    .font(.system(size: 9))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: 56)
-            .padding(.vertical, 8)
-            .background(.quaternary.opacity(0.25))
-
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 7) {
                 Text(item.title)
-                    .font(.subheadline.weight(.medium))
-                    .strikethrough(item.isDone)
-                    .foregroundStyle(item.isDone ? .secondary : .primary)
-
-                HStack(spacing: 10) {
-                    Label(minutesLabel, systemImage: "clock")
-                    Label(item.importance.label, systemImage: "flag")
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundStyle(.white)
+                Text("\(IOSPriorityTheme.minutesLabel(item.estimatedMinutes)) · Importance \(item.importance.rawValue)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: 0) {
-                Button(action: onToggleDone) {
-                    Image(systemName: item.isDone ? "arrow.uturn.backward" : "checkmark")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .accessibilityLabel(item.isDone ? "Mark as not done" : "Mark as done")
-
-                Divider()
-
-                Button(action: onDelete) {
-                    Image(systemName: "xmark")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .accessibilityLabel("Delete task")
-                .foregroundStyle(.red)
-            }
-            .buttonStyle(.plain)
-            .frame(width: 40)
+            Spacer(minLength: 12)
+            Text(IOSPriorityTheme.formattedScore(score))
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(.white)
         }
-        .opacity(item.isDone ? 0.45 : 1)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(.separator))
+        .padding(.horizontal, 22)
+        .padding(.vertical, 17)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(IOSPriorityTheme.rowColor(atIndex: rankIndex, of: totalOpen))
+        .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-        #if os(iOS)
+        .listRowBackground(Color.clear)
+        .swipeActions(edge: .leading) {
+            Button(action: onToggleDone) {
+                Label("Done", systemImage: "checkmark")
+            }
+            .tint(IOSPriorityTheme.accent)
+        }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
             }
-            Button(action: onToggleDone) {
-                Label(
-                    item.isDone ? "Reopen" : "Done",
-                    systemImage: item.isDone ? "arrow.uturn.backward" : "checkmark"
-                )
-            }
-            .tint(.teal)
         }
-        #endif
     }
 }
+
+/// A completed task in the "Done" section below the queue — plain
+/// strikethrough text fading with recency, mirroring option 6a's bottom
+/// block: no band color and no score shown there, just the title.
+struct DoneTodoRow: View {
+    let item: TodoItemModel
+    /// Position within the done section (0 = most recently completed) —
+    /// feeds `IOSPriorityTheme.doneOpacity` so older items fade further.
+    let fadeIndex: Int
+    var onToggleDone: () -> Void
+    var onDelete: () -> Void
+
+    private var opacity: Double {
+        IOSPriorityTheme.doneOpacity(atIndex: fadeIndex)
+    }
+
+    var body: some View {
+        Text(item.title)
+            .font(.system(size: 19, weight: .bold))
+            .foregroundStyle(.white.opacity(opacity))
+            .strikethrough(true, color: .white.opacity(opacity))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 22)
+            .listRowInsets(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .swipeActions(edge: .trailing) {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Delete", systemImage: "trash")
+                }
+                Button(action: onToggleDone) {
+                    Label("Reopen", systemImage: "arrow.uturn.backward")
+                }
+                .tint(IOSPriorityTheme.accent)
+            }
+    }
+}
+#endif

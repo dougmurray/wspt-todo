@@ -10,13 +10,14 @@ enum PriorityViewMode {
 }
 #endif
 
-/// Root view. On iOS this mirrors the overall page structure of
-/// docs/wspt-todo.html: header + formula badge, add form, open-count
-/// header, ranked list / empty state. On macOS it instead follows the
-/// Claude Design mockup ("WSPT To Do App UI" project): a "Today" header,
-/// a List/Plot tab switcher, and either `PriorityListView` or
-/// `PriorityPlotView` for the body — see CLAUDE.md's platform-branch
-/// convention.
+/// Root view. On iOS this follows the Claude Design mockup ("WSPT To Do App
+/// UI" project, turn 6 — "iOS, stacked color bars"): a green "To Do" header
+/// and a continuous stack of full-bleed colored rows for open tasks falling
+/// in intensity with rank, with a "Done" section below. A pull-down gesture
+/// (rather than the mockup's implied "+" affordance, which had no visible
+/// control to mirror) presents `AddTodoForm` full-screen. On macOS it
+/// instead follows that project's turn 3 ("Today" header, List/Plot tabs)
+/// — see CLAUDE.md's platform-branch convention.
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItemModel.createdAt) private var items: [TodoItemModel]
@@ -149,63 +150,106 @@ struct ContentView: View {
     // MARK: - iOS
 
     #if os(iOS)
+    @State private var isAddingTask = false
+
+    private var openRanked: [TodoItemModel] { rankedItems.filter { !$0.isDone } }
+    private var doneRanked: [TodoItemModel] { rankedItems.filter(\.isDone) }
+
+    /// `.refreshable`'s pull indicator needs a moment to animate back to
+    /// rest before its content is covered — flipping `isAddingTask`
+    /// synchronously (the action closure returning immediately) can leave
+    /// the list stuck with a blank gap under the header after the cover is
+    /// dismissed, because the collapse animation gets cut off by the cover
+    /// appearing mid-animation. Staying "in progress" for a beat first lets
+    /// the indicator finish collapsing before `AddTodoForm` is presented.
+    private func beginAddingTask() async {
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        isAddingTask = true
+    }
+
     private var iosBody: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 header
-                    .padding([.horizontal, .top])
-
-                AddTodoForm(onAdd: addItem)
-                    .padding(.horizontal)
-                    .padding(.top, 12)
-
-                openCountHeader
-                    .padding(.horizontal)
-                    .padding(.top, 16)
-
                 if items.isEmpty {
-                    EmptyStateView()
-                        .padding(.horizontal)
-                } else {
-                    List {
-                        ForEach(rankedItems) { item in
-                            TodoRow(
-                                item: item,
-                                onToggleDone: { toggleDone(item) },
-                                onDelete: { delete(item) }
-                            )
-                        }
+                    ScrollView {
+                        EmptyStateView()
+                            .padding(.horizontal)
                     }
-                    .listStyle(.plain)
+                    .refreshable { await beginAddingTask() }
+                    .tint(.white)
                     .scrollContentBackground(.hidden)
+                } else {
+                    queueList
                 }
             }
+            .background(IOSPriorityTheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+        }
+        .fullScreenCover(isPresented: $isAddingTask) {
+            AddTodoForm(
+                existingOpenItems: openRanked.map(\.asTodoItem),
+                onAdd: addItem
+            )
         }
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("Priority queue")
-                .font(.title2.weight(.semibold))
-            Spacer()
-            Text("P = I / (2×t)")
-                .font(.system(.caption, design: .monospaced))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(Color.orange.opacity(0.18))
-                .foregroundStyle(.orange)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-        }
+        Text("To Do")
+            .font(.system(size: 34, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 22)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            .background(IOSPriorityTheme.accent.ignoresSafeArea(edges: .top))
     }
 
-    private var openCountHeader: some View {
-        HStack {
-            Text(openCount == 1 ? "1 open task" : "\(openCount) open tasks")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Spacer()
+    /// Pulling down on the queue (`.refreshable`, rather than a "+" button
+    /// the mockup didn't show) presents `AddTodoForm`.
+    private var queueList: some View {
+        List {
+            ForEach(Array(openRanked.enumerated()), id: \.element.id) { index, item in
+                TodoRow(
+                    item: item,
+                    rankIndex: index,
+                    totalOpen: openRanked.count,
+                    onToggleDone: { toggleDone(item) },
+                    onDelete: { delete(item) }
+                )
+            }
+
+            if !doneRanked.isEmpty {
+                doneSectionHeader
+                ForEach(Array(doneRanked.enumerated()), id: \.element.id) { index, item in
+                    DoneTodoRow(
+                        item: item,
+                        fadeIndex: index,
+                        onToggleDone: { toggleDone(item) },
+                        onDelete: { delete(item) }
+                    )
+                }
+            }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(IOSPriorityTheme.background)
+        .refreshable { await beginAddingTask() }
+        .tint(.white)
+    }
+
+    private var doneSectionHeader: some View {
+        Text("Done")
+            .font(.system(size: 11, weight: .semibold))
+            .tracking(1.5)
+            .foregroundStyle(.white.opacity(0.3))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 22)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
     #endif
 
