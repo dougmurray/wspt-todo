@@ -16,6 +16,14 @@ struct TodoRow: View {
     let totalOpen: Int
     var onToggleDone: () -> Void
     var onDelete: () -> Void
+    var onEdit: () -> Void
+
+    /// How far a rightward swipe has to travel to commit — there's no
+    /// intermediate "Done" button to tap; crossing this distance marks the
+    /// task done directly, mirroring swipe-to-complete apps like Reminders.
+    private let completeThreshold: CGFloat = 70
+
+    @State private var dragOffset: CGFloat = 0
 
     private var score: Double {
         PriorityScorer.score(for: item.asTodoItem)
@@ -40,19 +48,35 @@ struct TodoRow: View {
         .padding(.vertical, 17)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(IOSPriorityTheme.rowColor(atIndex: rankIndex, of: totalOpen))
+        .offset(x: dragOffset)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
-        .swipeActions(edge: .leading) {
-            Button(action: onToggleDone) {
-                Label("Done", systemImage: "checkmark")
-            }
-            .tint(IOSPriorityTheme.accent)
-        }
+        .onTapGesture(count: 2, perform: onEdit)
+        .gesture(
+            DragGesture(minimumDistance: 16)
+                .onChanged { value in
+                    guard value.translation.width > 0 else { return }
+                    dragOffset = value.translation.width
+                }
+                .onEnded { value in
+                    if value.translation.width > completeThreshold {
+                        withAnimation(.easeOut(duration: 0.18)) {
+                            dragOffset = 600
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16, execute: onToggleDone)
+                    } else {
+                        withAnimation(.interactiveSpring()) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
         .swipeActions(edge: .trailing) {
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
             }
+            .tint(.red)
         }
     }
 }
@@ -67,6 +91,7 @@ struct DoneTodoRow: View {
     let fadeIndex: Int
     var onToggleDone: () -> Void
     var onDelete: () -> Void
+    var onEdit: () -> Void
 
     private var opacity: Double {
         IOSPriorityTheme.doneOpacity(atIndex: fadeIndex)
@@ -82,10 +107,12 @@ struct DoneTodoRow: View {
             .listRowInsets(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
+            .onTapGesture(count: 2, perform: onEdit)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive, action: onDelete) {
                     Label("Delete", systemImage: "trash")
                 }
+                .tint(.red)
                 Button(action: onToggleDone) {
                     Label("Reopen", systemImage: "arrow.uturn.backward")
                 }

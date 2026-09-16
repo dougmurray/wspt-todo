@@ -11,21 +11,57 @@ import WSPTCore
 struct AddTodoForm: View {
     /// The current open (not-done) tasks, for the live "slots in at #N"
     /// preview below — passed in rather than queried here so this view
-    /// stays a plain function of its inputs.
+    /// stays a plain function of its inputs. When editing, the caller
+    /// excludes `editingItem` itself so it isn't ranked against its own
+    /// pre-edit values.
     let existingOpenItems: [TodoItem]
-    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    /// Non-nil when this screen is editing an existing task (double-tapped
+    /// from the queue) rather than creating a new one — switches the title,
+    /// button label, and submit action, and seeds the fields/draft id from
+    /// its values so the live preview reflects the item being edited.
+    var editingItem: TodoItem?
+    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var titleFocused: Bool
+    @FocusState private var minutesFocused: Bool
 
-    @State private var title: String = ""
-    @State private var minutesText: String = "30"
-    @State private var importance: Importance = .normal
+    @State private var title: String
+    @State private var minutesText: String
+    @State private var importance: Importance
+    /// Tracks whether the time field still holds its untouched seed value —
+    /// once true, focusing it no longer clears it. Starts `true` when
+    /// editing (the seeded value is the task's real estimate, not a
+    /// placeholder default), so only the "New task" flow's "30" default
+    /// gets cleared on first tap.
+    @State private var hasEditedMinutes: Bool
     /// A fixed id for the in-progress draft, so repeated reads of
     /// `draftItem` (a computed property) still refer to "the same" item when
     /// looked up inside `rankedWithDraft` — `TodoItem.init` defaults to a
-    /// fresh `UUID()` per call otherwise, which would never match.
-    @State private var draftID = UUID()
+    /// fresh `UUID()` per call otherwise, which would never match. When
+    /// editing, this is the existing item's id so the preview replaces it
+    /// in place rather than adding a duplicate.
+    @State private var draftID: UUID
+
+    private var isEditing: Bool { editingItem != nil }
+
+    init(
+        existingOpenItems: [TodoItem],
+        editingItem: TodoItem? = nil,
+        onAdd: @escaping (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in },
+        onSave: @escaping (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
+    ) {
+        self.existingOpenItems = existingOpenItems
+        self.editingItem = editingItem
+        self.onAdd = onAdd
+        self.onSave = onSave
+        _title = State(initialValue: editingItem?.title ?? "")
+        _minutesText = State(initialValue: editingItem.map { String(Int($0.estimatedMinutes)) } ?? "30")
+        _importance = State(initialValue: editingItem?.importance ?? .normal)
+        _draftID = State(initialValue: editingItem?.id ?? UUID())
+        _hasEditedMinutes = State(initialValue: editingItem != nil)
+    }
 
     private var trimmedTitle: String {
         title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -136,7 +172,7 @@ struct AddTodoForm: View {
 
     private var topBar: some View {
         HStack {
-            Text("New task")
+            Text(isEditing ? "Edit task" : "New task")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(.white)
             Spacer()
@@ -185,6 +221,13 @@ struct AddTodoForm: View {
                     .font(.system(size: 17, weight: .bold))
                     .foregroundStyle(.white)
                     .tint(IOSPriorityTheme.accent)
+                    .focused($minutesFocused)
+                    .onChange(of: minutesFocused) { _, isFocused in
+                        if isFocused && !hasEditedMinutes {
+                            minutesText = ""
+                            hasEditedMinutes = true
+                        }
+                    }
                 Text("min")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.white.opacity(0.55))
@@ -270,7 +313,7 @@ struct AddTodoForm: View {
 
     private var addButton: some View {
         Button(action: submit) {
-            Text("Add to queue")
+            Text(isEditing ? "Save changes" : "Add to queue")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -284,7 +327,11 @@ struct AddTodoForm: View {
 
     private func submit() {
         guard canAdd else { return }
-        onAdd(trimmedTitle, minutes, importance)
+        if isEditing {
+            onSave(trimmedTitle, minutes, importance)
+        } else {
+            onAdd(trimmedTitle, minutes, importance)
+        }
         dismiss()
     }
 }

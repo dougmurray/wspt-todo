@@ -139,18 +139,15 @@ struct ContentView: View {
         .buttonStyle(.plain)
     }
 
-    private func updateItem(_ item: TodoItemModel, title: String, minutes: Double, importance: Importance) {
-        item.title = title
-        item.estimatedMinutes = minutes
-        item.importance = importance
-        try? modelContext.save()
-    }
     #endif
 
     // MARK: - iOS
 
     #if os(iOS)
     @State private var isAddingTask = false
+    /// Non-nil while `AddTodoForm` is presented in edit mode for this task
+    /// — set by a double tap on its row (see `queueList`).
+    @State private var editingItem: TodoItemModel?
 
     private var openRanked: [TodoItemModel] { rankedItems.filter { !$0.isDone } }
     private var doneRanked: [TodoItemModel] { rankedItems.filter(\.isDone) }
@@ -192,6 +189,15 @@ struct ContentView: View {
                 onAdd: addItem
             )
         }
+        .fullScreenCover(item: $editingItem) { item in
+            AddTodoForm(
+                existingOpenItems: openRanked.filter { $0.id != item.id }.map(\.asTodoItem),
+                editingItem: item.asTodoItem,
+                onSave: { title, minutes, importance in
+                    updateItem(item, title: title, minutes: minutes, importance: importance)
+                }
+            )
+        }
     }
 
     private var header: some View {
@@ -215,7 +221,8 @@ struct ContentView: View {
                     rankIndex: index,
                     totalOpen: openRanked.count,
                     onToggleDone: { toggleDone(item) },
-                    onDelete: { delete(item) }
+                    onDelete: { delete(item) },
+                    onEdit: { editingItem = item }
                 )
             }
 
@@ -226,7 +233,8 @@ struct ContentView: View {
                         item: item,
                         fadeIndex: index,
                         onToggleDone: { toggleDone(item) },
-                        onDelete: { delete(item) }
+                        onDelete: { delete(item) },
+                        onEdit: { editingItem = item }
                     )
                 }
             }
@@ -268,6 +276,13 @@ struct ContentView: View {
 
     private func delete(_ item: TodoItemModel) {
         modelContext.delete(item)
+        try? modelContext.save()
+    }
+
+    private func updateItem(_ item: TodoItemModel, title: String, minutes: Double, importance: Importance) {
+        item.title = title
+        item.estimatedMinutes = minutes
+        item.importance = importance
         try? modelContext.save()
     }
 }
