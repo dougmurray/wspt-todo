@@ -160,7 +160,7 @@ struct ContentView: View {
     /// appearing mid-animation. Staying "in progress" for a beat first lets
     /// the indicator finish collapsing before `AddTodoForm` is presented.
     private func beginAddingTask() async {
-        try? await Task.sleep(nanoseconds: 300_000_000)
+        try? await Task.sleep(nanoseconds: 200_000_000)
         isAddingTask = true
     }
 
@@ -184,14 +184,10 @@ struct ContentView: View {
             .toolbar(.hidden, for: .navigationBar)
         }
         .fullScreenCover(isPresented: $isAddingTask) {
-            AddTodoForm(
-                existingOpenItems: openRanked.map(\.asTodoItem),
-                onAdd: addItem
-            )
+            AddTodoForm(onAdd: addItem)
         }
         .fullScreenCover(item: $editingItem) { item in
             AddTodoForm(
-                existingOpenItems: openRanked.filter { $0.id != item.id }.map(\.asTodoItem),
                 editingItem: item.asTodoItem,
                 onSave: { title, minutes, importance in
                     updateItem(item, title: title, minutes: minutes, importance: importance)

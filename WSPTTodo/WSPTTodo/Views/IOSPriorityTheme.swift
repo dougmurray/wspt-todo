@@ -24,10 +24,6 @@ enum IOSPriorityTheme {
     /// The mockup's "Cancel" text color on the New Task screen — a lighter
     /// green than `accent`, legible on black without filling like a button.
     static let cancelAccent = Color(red: 0x6a / 255, green: 0xa8 / 255, blue: 0x7c / 255)
-    /// The "slots in at #N" preview card background (`#396f47`) — the
-    /// ramp's second step, used regardless of where the task would
-    /// actually land so the preview always reads as "a band", not a rank.
-    static let previewCard = Color(red: 0x39 / 255, green: 0x6f / 255, blue: 0x47 / 255)
 
     private static let rampStart = (r: Double(0x45), g: Double(0x87), b: Double(0x5a))
     private static let rampEnd = (r: Double(0x1b), g: Double(0x35), b: Double(0x24))
@@ -66,19 +62,6 @@ enum IOSPriorityTheme {
             ? String(format: "%.0f", minutes)
             : String(format: "%.2f", minutes)
         return "\(formatted) min"
-    }
-
-    /// "0.75h", "2h" — the compact hours form used in the New Task screen's
-    /// formula readout ("5 ÷ (2 × 0.75h) = 3.33").
-    static func hoursLabel(_ minutes: Double) -> String {
-        let hours = minutes / 60
-        if hours == hours.rounded() {
-            return String(format: "%.0fh", hours)
-        }
-        var formatted = String(format: "%.2f", hours)
-        while formatted.hasSuffix("0") { formatted.removeLast() }
-        if formatted.hasSuffix(".") { formatted.removeLast() }
-        return "\(formatted)h"
     }
 }
 #endif

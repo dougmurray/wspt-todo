@@ -64,7 +64,10 @@ struct TodoRow: View {
                         withAnimation(.easeOut(duration: 0.18)) {
                             dragOffset = 600
                         }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16, execute: onToggleDone)
+                        Task {
+                            try? await Task.sleep(nanoseconds: 160_000_000)
+                            onToggleDone()
+                        }
                     } else {
                         withAnimation(.interactiveSpring()) {
                             dragOffset = 0
