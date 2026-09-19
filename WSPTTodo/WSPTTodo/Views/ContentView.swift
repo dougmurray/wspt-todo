@@ -38,6 +38,14 @@ struct ContentView: View {
         return PriorityScorer.rank(items.map(\.asTodoItem)).compactMap { byID[$0.id] }
     }
 
+    /// Effective (possibly due-date-boosted) score per item, computed once
+    /// per view evaluation alongside `rankedItems` so rows display the same
+    /// number that determined their rank rather than recomputing the plain
+    /// WSPT score in isolation.
+    private var scores: [UUID: Double] {
+        PriorityScorer.effectiveScores(for: items.map(\.asTodoItem))
+    }
+
     private var openCount: Int {
         items.filter { !$0.isDone }.count
     }
@@ -66,6 +74,7 @@ struct ContentView: View {
             } else if viewMode == .list {
                 PriorityListView(
                     items: rankedItems,
+                    scores: scores,
                     onToggleDone: toggleDone,
                     onDelete: delete,
                     onSave: updateItem,
@@ -74,6 +83,7 @@ struct ContentView: View {
             } else {
                 PriorityPlotView(
                     items: rankedItems,
+                    scores: scores,
                     selectedID: $selectedID,
                     onToggleDone: toggleDone,
                     onDelete: delete,
@@ -189,8 +199,8 @@ struct ContentView: View {
         .fullScreenCover(item: $editingItem) { item in
             AddTodoForm(
                 editingItem: item.asTodoItem,
-                onSave: { title, minutes, importance in
-                    updateItem(item, title: title, minutes: minutes, importance: importance)
+                onSave: { title, minutes, importance, dueDate in
+                    updateItem(item, title: title, minutes: minutes, importance: importance, dueDate: dueDate)
                 }
             )
         }
@@ -214,6 +224,7 @@ struct ContentView: View {
             ForEach(Array(openRanked.enumerated()), id: \.element.id) { index, item in
                 TodoRow(
                     item: item,
+                    score: scores[item.id] ?? PriorityScorer.score(for: item.asTodoItem),
                     rankIndex: index,
                     totalOpen: openRanked.count,
                     onToggleDone: { toggleDone(item) },
@@ -259,8 +270,13 @@ struct ContentView: View {
 
     // MARK: - Mutations
 
-    private func addItem(title: String, minutes: Double, importance: Importance) {
-        let newItem = TodoItemModel(title: title, estimatedMinutes: minutes, importance: importance)
+    private func addItem(title: String, minutes: Double, importance: Importance, dueDate: Date?) {
+        let newItem = TodoItemModel(
+            title: title,
+            estimatedMinutes: minutes,
+            importance: importance,
+            dueDate: dueDate
+        )
         modelContext.insert(newItem)
         try? modelContext.save()
     }
@@ -275,10 +291,17 @@ struct ContentView: View {
         try? modelContext.save()
     }
 
-    private func updateItem(_ item: TodoItemModel, title: String, minutes: Double, importance: Importance) {
+    private func updateItem(
+        _ item: TodoItemModel,
+        title: String,
+        minutes: Double,
+        importance: Importance,
+        dueDate: Date?
+    ) {
         item.title = title
         item.estimatedMinutes = minutes
         item.importance = importance
+        item.dueDate = dueDate
         try? modelContext.save()
     }
 }

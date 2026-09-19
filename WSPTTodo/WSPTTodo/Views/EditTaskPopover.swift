@@ -12,27 +12,32 @@ struct EditTaskPopover: View {
     let initialTitle: String
     let initialMinutes: Double
     let initialImportance: Importance
-    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    let initialDueDate: Date?
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var title: String
     @State private var minutesText: String
     @State private var importance: Importance
+    @State private var dueDate: Date?
     @State private var errorMessage: String?
 
     init(
         initialTitle: String,
         initialMinutes: Double,
         initialImportance: Importance,
-        onSave: @escaping (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+        initialDueDate: Date? = nil,
+        onSave: @escaping (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
     ) {
         self.initialTitle = initialTitle
         self.initialMinutes = initialMinutes
         self.initialImportance = initialImportance
+        self.initialDueDate = initialDueDate
         self.onSave = onSave
         _title = State(initialValue: initialTitle)
         _minutesText = State(initialValue: MacPriorityTheme.plainMinutes(initialMinutes))
         _importance = State(initialValue: initialImportance)
+        _dueDate = State(initialValue: initialDueDate)
     }
 
     var body: some View {
@@ -61,6 +66,16 @@ struct EditTaskPopover: View {
                 .labelsHidden()
             }
 
+            Toggle("Due date", isOn: hasDueDateBinding)
+            if let dueDate {
+                DatePicker(
+                    "Due date",
+                    selection: Binding(get: { dueDate }, set: { self.dueDate = $0 }),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+            }
+
             if let errorMessage {
                 Text(errorMessage)
                     .font(MacPriorityTheme.sans(11))
@@ -84,6 +99,15 @@ struct EditTaskPopover: View {
         .preferredColorScheme(.light)
     }
 
+    private var hasDueDateBinding: Binding<Bool> {
+        Binding(
+            get: { dueDate != nil },
+            set: { isOn in
+                dueDate = isOn ? (dueDate ?? Calendar.current.date(byAdding: .day, value: 1, to: .now)) : nil
+            }
+        )
+    }
+
     private func submit() {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty else {
@@ -96,7 +120,7 @@ struct EditTaskPopover: View {
         }
 
         errorMessage = nil
-        onSave(trimmedTitle, minutes, importance)
+        onSave(trimmedTitle, minutes, importance, dueDate)
         dismiss()
     }
 }

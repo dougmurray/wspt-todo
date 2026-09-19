@@ -63,5 +63,24 @@ enum IOSPriorityTheme {
             : String(format: "%.2f", minutes)
         return "\(formatted) min"
     }
+
+    /// "Due today", "Due tomorrow", "Due Thursday" (within the next week),
+    /// "Due Jan 5" further out, or "Overdue" once the date has passed.
+    static func dueDateLabel(_ dueDate: Date, today: Date = .now) -> String {
+        let calendar = Calendar.current
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: today),
+            to: calendar.startOfDay(for: dueDate)
+        ).day ?? 0
+
+        if days < 0 { return "Overdue" }
+        if days == 0 { return "Due today" }
+        if days == 1 { return "Due tomorrow" }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = days < 7 ? "EEEE" : "MMM d"
+        return "Due \(formatter.string(from: dueDate))"
+    }
 }
 #endif

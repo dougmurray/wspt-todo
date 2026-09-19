@@ -8,10 +8,13 @@ import WSPTCore
 /// `PriorityScorer.rank(_:)`, same as `PriorityListView`.
 struct PriorityPlotView: View {
     let items: [TodoItemModel]
+    /// Effective (possibly due-date-boosted) score per item id, computed
+    /// once by `ContentView` for the whole list.
+    let scores: [UUID: Double]
     @Binding var selectedID: UUID?
     var onToggleDone: (TodoItemModel) -> Void
     var onDelete: (TodoItemModel) -> Void
-    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     private var selected: TodoItemModel? {
         if let selectedID, let match = items.first(where: { $0.id == selectedID }) {
@@ -28,11 +31,14 @@ struct PriorityPlotView: View {
                 if let selected {
                     DetailPanel(
                         item: selected,
+                        score: scores[selected.id] ?? PriorityScorer.score(for: selected.asTodoItem),
                         rank: rank(of: selected),
                         total: items.count,
                         onToggleDone: { onToggleDone(selected) },
                         onDelete: { onDelete(selected) },
-                        onSave: { title, minutes, importance in onSave(selected, title, minutes, importance) }
+                        onSave: { title, minutes, importance, dueDate in
+                            onSave(selected, title, minutes, importance, dueDate)
+                        }
                     )
                 } else {
                     Text("No tasks to inspect yet.")
@@ -212,15 +218,14 @@ private struct ScatterChart: View {
 /// with Edit / Start now / delete controls.
 private struct DetailPanel: View {
     let item: TodoItemModel
+    let score: Double
     let rank: Int
     let total: Int
     var onToggleDone: () -> Void
     var onDelete: () -> Void
-    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     @State private var showEdit = false
-
-    private var score: Double { PriorityScorer.score(for: item.asTodoItem) }
 
     /// `PriorityScorer` divides by minutes, not hours — mirror that here
     /// so this caption's arithmetic actually matches the Score number
@@ -246,6 +251,9 @@ private struct DetailPanel: View {
                     field("Importance", "\(item.importance.rawValue)")
                     field("Estimate", MacPriorityTheme.estimateLabel(minutes: item.estimatedMinutes))
                     field("Math", "\(item.importance.rawValue) ÷ (2 × \(minutesLabel))")
+                    if let dueDate = item.dueDate {
+                        field("Due", MacPriorityTheme.dueDateLabel(dueDate))
+                    }
                 }
             }
 
@@ -284,6 +292,7 @@ private struct DetailPanel: View {
                 initialTitle: item.title,
                 initialMinutes: item.estimatedMinutes,
                 initialImportance: item.importance,
+                initialDueDate: item.dueDate,
                 onSave: onSave
             )
         }

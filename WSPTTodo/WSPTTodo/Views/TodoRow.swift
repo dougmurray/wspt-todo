@@ -10,6 +10,11 @@ import WSPTCore
 /// static screenshot) preserve done/delete without adding any visible chrome.
 struct TodoRow: View {
     let item: TodoItemModel
+    /// Effective score (post due-date boost, if any) — computed once by
+    /// `ContentView` for the whole list rather than recomputed per row, so
+    /// every row's badge reflects the same ranking the queue order is
+    /// based on.
+    let score: Double
     /// This task's position among open tasks (0 = top of the queue) — feeds
     /// `IOSPriorityTheme.rowColor` so intensity falls smoothly with rank.
     let rankIndex: Int
@@ -25,8 +30,12 @@ struct TodoRow: View {
 
     @State private var dragOffset: CGFloat = 0
 
-    private var score: Double {
-        PriorityScorer.score(for: item.asTodoItem)
+    private var metaLabel: String {
+        var label = "\(IOSPriorityTheme.minutesLabel(item.estimatedMinutes)) · Importance \(item.importance.rawValue)"
+        if let dueDate = item.dueDate {
+            label += " · \(IOSPriorityTheme.dueDateLabel(dueDate))"
+        }
+        return label
     }
 
     var body: some View {
@@ -35,7 +44,7 @@ struct TodoRow: View {
                 Text(item.title)
                     .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(.white)
-                Text("\(IOSPriorityTheme.minutesLabel(item.estimatedMinutes)) · Importance \(item.importance.rawValue)")
+                Text(metaLabel)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.white)
             }

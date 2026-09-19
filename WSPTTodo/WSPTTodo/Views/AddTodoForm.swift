@@ -14,8 +14,8 @@ struct AddTodoForm: View {
     /// button label, and submit action, and seeds the fields/draft id from
     /// its values so the live preview reflects the item being edited.
     var editingItem: TodoItem?
-    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
-    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
+    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void = { _, _, _, _ in }
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void = { _, _, _, _ in }
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var titleFocused: Bool
@@ -24,6 +24,7 @@ struct AddTodoForm: View {
     @State private var title: String
     @State private var minutesText: String
     @State private var importance: Importance
+    @State private var dueDate: Date?
     /// Tracks whether the time field still holds its untouched seed value —
     /// once true, focusing it no longer clears it. Starts `true` when
     /// editing (the seeded value is the task's real estimate, not a
@@ -35,8 +36,8 @@ struct AddTodoForm: View {
 
     init(
         editingItem: TodoItem? = nil,
-        onAdd: @escaping (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in },
-        onSave: @escaping (_ title: String, _ minutes: Double, _ importance: Importance) -> Void = { _, _, _ in }
+        onAdd: @escaping (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void = { _, _, _, _ in },
+        onSave: @escaping (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void = { _, _, _, _ in }
     ) {
         self.editingItem = editingItem
         self.onAdd = onAdd
@@ -44,6 +45,7 @@ struct AddTodoForm: View {
         _title = State(initialValue: editingItem?.title ?? "")
         _minutesText = State(initialValue: editingItem.map { String(Int($0.estimatedMinutes)) } ?? "30")
         _importance = State(initialValue: editingItem?.importance ?? .normal)
+        _dueDate = State(initialValue: editingItem?.dueDate)
         _hasEditedMinutes = State(initialValue: editingItem != nil)
     }
 
@@ -79,6 +81,7 @@ struct AddTodoForm: View {
                         pillLabel: { "\($0)" },
                         onSelect: { importance = Importance(rawValue: $0) ?? .normal }
                     )
+                    dueDateSection
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 26)
@@ -170,6 +173,44 @@ struct AddTodoForm: View {
         }
     }
 
+    /// Optional due date: a toggle plus a compact date picker, shown only
+    /// once enabled. Enabling defaults to tomorrow, a more useful starting
+    /// point than today for a field about future deadlines.
+    private var dueDateSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .lastTextBaseline) {
+                Text("DUE DATE")
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(1.2)
+                    .foregroundStyle(.white.opacity(0.4))
+                Spacer()
+                Toggle("", isOn: hasDueDateBinding)
+                    .labelsHidden()
+                    .tint(IOSPriorityTheme.accent)
+            }
+            if let dueDate {
+                DatePicker(
+                    "",
+                    selection: Binding(get: { dueDate }, set: { self.dueDate = $0 }),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+                .tint(IOSPriorityTheme.accent)
+                .colorScheme(.dark)
+            }
+        }
+    }
+
+    private var hasDueDateBinding: Binding<Bool> {
+        Binding(
+            get: { dueDate != nil },
+            set: { isOn in
+                dueDate = isOn ? Calendar.current.date(byAdding: .day, value: 1, to: .now) : nil
+            }
+        )
+    }
+
     private func presetSection(
         label: String,
         value: String,
@@ -232,15 +273,15 @@ struct AddTodoForm: View {
     private func submit() {
         guard canAdd else { return }
         if isEditing {
-            onSave(trimmedTitle, minutes, importance)
+            onSave(trimmedTitle, minutes, importance, dueDate)
         } else {
-            onAdd(trimmedTitle, minutes, importance)
+            onAdd(trimmedTitle, minutes, importance, dueDate)
         }
         dismiss()
     }
 }
 
 #Preview {
-    AddTodoForm(onAdd: { _, _, _ in })
+    AddTodoForm(onAdd: { _, _, _, _ in })
 }
 #endif

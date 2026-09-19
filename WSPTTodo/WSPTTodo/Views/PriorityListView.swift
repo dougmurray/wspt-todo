@@ -9,10 +9,13 @@ import WSPTCore
 /// same ordering `ContentView` already computes for the iOS list.
 struct PriorityListView: View {
     let items: [TodoItemModel]
+    /// Effective (possibly due-date-boosted) score per item id, computed
+    /// once by `ContentView` for the whole list.
+    let scores: [UUID: Double]
     var onToggleDone: (TodoItemModel) -> Void
     var onDelete: (TodoItemModel) -> Void
-    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance) -> Void
-    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
+    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     private var openItems: [TodoItemModel] { items.filter { !$0.isDone } }
     private var doneItems: [TodoItemModel] { items.filter(\.isDone) }
@@ -25,15 +28,19 @@ struct PriorityListView: View {
                 if let hero {
                     HeroCard(
                         item: hero,
+                        score: scores[hero.id] ?? PriorityScorer.score(for: hero.asTodoItem),
                         onToggleDone: { onToggleDone(hero) },
                         onDelete: { onDelete(hero) },
-                        onSave: { title, minutes, importance in onSave(hero, title, minutes, importance) }
+                        onSave: { title, minutes, importance, dueDate in
+                            onSave(hero, title, minutes, importance, dueDate)
+                        }
                     )
                 }
 
                 if !restItems.isEmpty {
                     TableCard(
                         items: restItems,
+                        scores: scores,
                         startRank: hero == nil ? 1 : 2,
                         onToggleDone: onToggleDone,
                         onDelete: onDelete,
@@ -55,14 +62,13 @@ struct PriorityListView: View {
 /// until you point at it.
 private struct HeroCard: View {
     let item: TodoItemModel
+    let score: Double
     var onToggleDone: () -> Void
     var onDelete: () -> Void
-    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     @State private var isHovering = false
     @State private var showEdit = false
-
-    private var score: Double { PriorityScorer.score(for: item.asTodoItem) }
 
     var body: some View {
         HStack(alignment: .top, spacing: 22) {
@@ -83,6 +89,10 @@ private struct HeroCard: View {
                     Text("Importance \(item.importance.rawValue)")
                     Rectangle().frame(width: 1, height: 13).foregroundStyle(MacPriorityTheme.ink(0.16))
                     Text(MacPriorityTheme.estimateLabel(minutes: item.estimatedMinutes))
+                    if let dueDate = item.dueDate {
+                        Rectangle().frame(width: 1, height: 13).foregroundStyle(MacPriorityTheme.ink(0.16))
+                        Text(MacPriorityTheme.dueDateLabel(dueDate))
+                    }
                 }
                 .font(MacPriorityTheme.sans(13))
                 .foregroundStyle(MacPriorityTheme.ink(0.6))
@@ -127,6 +137,7 @@ private struct HeroCard: View {
                 initialTitle: item.title,
                 initialMinutes: item.estimatedMinutes,
                 initialImportance: item.importance,
+                initialDueDate: item.dueDate,
                 onSave: onSave
             )
         }
@@ -143,10 +154,11 @@ private struct HeroCard: View {
 /// siblings don't need.
 private struct TableCard: View {
     let items: [TodoItemModel]
+    let scores: [UUID: Double]
     let startRank: Int
     var onToggleDone: (TodoItemModel) -> Void
     var onDelete: (TodoItemModel) -> Void
-    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (TodoItemModel, _ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -157,10 +169,13 @@ private struct TableCard: View {
                 }
                 TableRow(
                     item: item,
+                    score: scores[item.id] ?? PriorityScorer.score(for: item.asTodoItem),
                     rank: startRank + offset,
                     onToggleDone: { onToggleDone(item) },
                     onDelete: { onDelete(item) },
-                    onSave: { title, minutes, importance in onSave(item, title, minutes, importance) }
+                    onSave: { title, minutes, importance, dueDate in
+                        onSave(item, title, minutes, importance, dueDate)
+                    }
                 )
             }
         }
@@ -194,15 +209,14 @@ private struct TableHeaderRow: View {
 
 private struct TableRow: View {
     let item: TodoItemModel
+    let score: Double
     let rank: Int
     var onToggleDone: () -> Void
     var onDelete: () -> Void
-    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onSave: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     @State private var isHovering = false
     @State private var showEdit = false
-
-    private var score: Double { PriorityScorer.score(for: item.asTodoItem) }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -265,6 +279,7 @@ private struct TableRow: View {
                 initialTitle: item.title,
                 initialMinutes: item.estimatedMinutes,
                 initialImportance: item.importance,
+                initialDueDate: item.dueDate,
                 onSave: onSave
             )
         }
@@ -274,11 +289,13 @@ private struct TableRow: View {
 /// Compact pill-style add bar: name field, importance menu, minutes field,
 /// Add button — mirrors the mockup's bottom row.
 private struct AddTaskBar: View {
-    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance) -> Void
+    var onAdd: (_ title: String, _ minutes: Double, _ importance: Importance, _ dueDate: Date?) -> Void
 
     @State private var title = ""
     @State private var minutesText = ""
     @State private var importance: Importance = .normal
+    @State private var dueDate: Date?
+    @State private var showDuePicker = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -317,6 +334,38 @@ private struct AddTaskBar: View {
                     .pillBackground()
                     .onSubmit(submit)
 
+                Button(action: { showDuePicker = true }) {
+                    Image(systemName: dueDate == nil ? "calendar" : "calendar.badge.clock")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(dueDate == nil ? MacPriorityTheme.ink(0.5) : MacPriorityTheme.accent)
+                .padding(10)
+                .pillBackground()
+                .popover(isPresented: $showDuePicker) {
+                    // macOS's `.graphical` DatePicker ignores an outer
+                    // `.frame()` and keeps its small fixed intrinsic size
+                    // (~150×148pt), so enlarging it means scaling the
+                    // rendered content itself and re-framing to that scaled
+                    // size — a plain `.frame()` alone just pads blank space
+                    // around an unchanged small calendar.
+                    VStack(alignment: .leading, spacing: 14) {
+                        DatePicker(
+                            "Due date",
+                            selection: Binding(get: { dueDate ?? .now }, set: { dueDate = $0 }),
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
+                        .fixedSize()
+                        .scaleEffect(1.8)
+                        .frame(width: 150 * 1.8, height: 148 * 1.8)
+                        if dueDate != nil {
+                            Button("Clear due date", role: .destructive) { dueDate = nil }
+                        }
+                    }
+                    .padding(18)
+                }
+
                 Button(action: submit) {
                     Text("Add")
                         .font(MacPriorityTheme.sans(12.5, weight: .medium))
@@ -353,11 +402,12 @@ private struct AddTaskBar: View {
         }
 
         errorMessage = nil
-        onAdd(trimmedTitle, minutes, importance)
+        onAdd(trimmedTitle, minutes, importance, dueDate)
 
         title = ""
         minutesText = ""
         importance = .normal
+        dueDate = nil
     }
 }
 

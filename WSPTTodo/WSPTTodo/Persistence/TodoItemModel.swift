@@ -24,13 +24,15 @@ final class TodoItemModel {
     var importanceRaw: Int = Importance.normal.rawValue
     var isDone: Bool = false
     var createdAt: Date = Date.now
+    var dueDate: Date? = nil
 
     init(
         title: String,
         estimatedMinutes: Double,
         importance: Importance,
         isDone: Bool = false,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        dueDate: Date? = nil
     ) {
         self.id = UUID()
         self.title = title
@@ -38,6 +40,7 @@ final class TodoItemModel {
         self.importanceRaw = importance.rawValue
         self.isDone = isDone
         self.createdAt = createdAt
+        self.dueDate = dueDate
     }
 
     var importance: Importance {
@@ -54,7 +57,8 @@ final class TodoItemModel {
             estimatedMinutes: estimatedMinutes,
             importance: importance,
             isDone: isDone,
-            createdAt: createdAt
+            createdAt: createdAt,
+            dueDate: dueDate
         )
     }
 }

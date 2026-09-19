@@ -14,6 +14,10 @@ public struct TodoItem: Identifiable, Equatable, Codable, Sendable {
     public var importance: Importance
     public var isDone: Bool
     public var createdAt: Date
+    /// Optional deadline. When set, `PriorityScorer` boosts this item's
+    /// effective score as `dueDate` approaches — see `PriorityScorer`'s
+    /// "Due-date urgency boost" section.
+    public var dueDate: Date?
 
     public init(
         id: UUID = UUID(),
@@ -21,7 +25,8 @@ public struct TodoItem: Identifiable, Equatable, Codable, Sendable {
         estimatedMinutes: Double,
         importance: Importance,
         isDone: Bool = false,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        dueDate: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -29,5 +34,6 @@ public struct TodoItem: Identifiable, Equatable, Codable, Sendable {
         self.importance = importance
         self.isDone = isDone
         self.createdAt = createdAt
+        self.dueDate = dueDate
     }
 }

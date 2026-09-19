@@ -109,4 +109,111 @@ struct PriorityScorerTests {
     func emptyInput() {
         #expect(PriorityScorer.rank([]).isEmpty)
     }
+
+    // MARK: - Due-date urgency boost
+
+    private func daysFromNow(_ days: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: days, to: .now)!
+    }
+
+    @Test("item without a due date is unaffected")
+    func noDueDateUnaffected() {
+        let item = TodoItem(title: "plain", estimatedMinutes: 60, importance: .normal)
+        let scores = PriorityScorer.effectiveScores(for: [item])
+        #expect(scores[item.id] == PriorityScorer.score(for: item))
+    }
+
+    @Test("due date outside the urgency window is unaffected")
+    func dueDateOutsideWindowUnaffected() {
+        // Due item naturally at the bottom score — due 5 days out, beyond
+        // the 3-day window, so it should score at its plain value.
+        let high = TodoItem(title: "high", estimatedMinutes: 60, importance: .critical, createdAt: .now) // 5/120 = 0.0417
+        let mid = TodoItem(title: "mid", estimatedMinutes: 100, importance: .critical, createdAt: .now) // 5/200 = 0.025
+        let due = TodoItem(
+            title: "due",
+            estimatedMinutes: 250,
+            importance: .critical,
+            createdAt: .now,
+            dueDate: daysFromNow(5)
+        ) // 5/500 = 0.01
+
+        let scores = PriorityScorer.effectiveScores(for: [high, mid, due])
+        #expect(scores[due.id] == PriorityScorer.score(for: due))
+        #expect(scores[high.id]! > scores[mid.id]! && scores[mid.id]! > scores[due.id]!)
+    }
+
+    @Test("climbing task lands at the midpoint of the item it passes and the one above it")
+    func climbsToMidpointOfNextRank() {
+        // Scores chosen for clean fractions: score = importance / (2 × minutes).
+        // importance 5, minutes 5 -> 5/10 = 0.5
+        let a = TodoItem(title: "a", estimatedMinutes: 5, importance: .critical) // 0.5
+        // importance 3, minutes 5 -> 3/10 = 0.3
+        let b = TodoItem(title: "b", estimatedMinutes: 5, importance: .normal) // 0.3
+        // importance 2, minutes 5 -> 2/10 = 0.2, due in 2 days (1 climb step inside a 3-day window)
+        let c = TodoItem(
+            title: "c",
+            estimatedMinutes: 5,
+            importance: .low,
+            dueDate: daysFromNow(2)
+        ) // 0.2 base
+
+        let scores = PriorityScorer.effectiveScores(for: [a, b, c])
+        #expect(scores[a.id] == 0.5)
+        #expect(scores[b.id] == 0.3)
+        #expect(scores[c.id] == (0.3 + 0.5) / 2)
+    }
+
+    @Test("climbing task that reaches the top scores 20% above the previous top")
+    func climbingPastTheTopBoostsAboveIt() {
+        let a = TodoItem(title: "a", estimatedMinutes: 5, importance: .critical) // 0.5
+        let b = TodoItem(title: "b", estimatedMinutes: 5, importance: .normal) // 0.3
+        let c = TodoItem(
+            title: "c",
+            estimatedMinutes: 5,
+            importance: .low,
+            dueDate: daysFromNow(0)
+        ) // 0.2 base, due today -> 3 climb steps -> reaches rank 0
+
+        let scores = PriorityScorer.effectiveScores(for: [a, b, c])
+        #expect(scores[c.id] == 0.5 * 1.2)
+
+        let ranked = PriorityScorer.rank([a, b, c])
+        #expect(ranked.map(\.title) == ["c", "a", "b"])
+    }
+
+    @Test("boost is frozen once the due date has passed, not escalating further")
+    func boostFreezesAfterDueDate() {
+        let a = TodoItem(title: "a", estimatedMinutes: 5, importance: .critical) // 0.5
+        let b = TodoItem(title: "b", estimatedMinutes: 5, importance: .normal) // 0.3
+        let dueToday = TodoItem(title: "due today", estimatedMinutes: 5, importance: .low, dueDate: daysFromNow(0))
+        let overdue = TodoItem(title: "overdue", estimatedMinutes: 5, importance: .low, dueDate: daysFromNow(-10))
+
+        let todayScore = PriorityScorer.effectiveScores(for: [a, b, dueToday])[dueToday.id]
+        let overdueScore = PriorityScorer.effectiveScores(for: [a, b, overdue])[overdue.id]
+        #expect(todayScore == overdueScore)
+    }
+
+    @Test("an already-top-ranked open item with a due date is unaffected")
+    func alreadyTopRankedItemUnaffected() {
+        let top = TodoItem(title: "top", estimatedMinutes: 5, importance: .critical, dueDate: daysFromNow(0))
+        let lower = TodoItem(title: "lower", estimatedMinutes: 5, importance: .low)
+
+        let scores = PriorityScorer.effectiveScores(for: [top, lower])
+        #expect(scores[top.id] == PriorityScorer.score(for: top))
+    }
+
+    @Test("done items with a due date are never boosted")
+    func doneItemsNeverBoosted() {
+        let a = TodoItem(title: "a", estimatedMinutes: 5, importance: .critical) // 0.5
+        let doneDue = TodoItem(
+            title: "done due",
+            estimatedMinutes: 5,
+            importance: .low,
+            isDone: true,
+            dueDate: daysFromNow(0)
+        )
+
+        let scores = PriorityScorer.effectiveScores(for: [a, doneDue])
+        #expect(scores[doneDue.id] == PriorityScorer.score(for: doneDue))
+    }
 }
