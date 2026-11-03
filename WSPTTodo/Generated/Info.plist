@@ -20,6 +20,12 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>GoogleOAuthClientID</key>
+	<string></string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>WSPT Todo shows your calendar events next to your task queue. It never changes your events.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>WSPT Todo shows your calendar events next to your task queue. It never changes your events.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

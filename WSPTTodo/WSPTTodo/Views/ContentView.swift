@@ -3,10 +3,10 @@ import SwiftData
 import WSPTCore
 
 #if os(macOS)
-/// Which of the two macOS tabs — ranked list or scatter plot — is showing.
+/// Which of the two macOS tabs — ranked list or calendar — is showing.
 enum PriorityViewMode {
     case list
-    case plot
+    case calendar
 }
 #endif
 
@@ -16,15 +16,16 @@ enum PriorityViewMode {
 /// in intensity with rank, with a "Done" section below. A pull-down gesture
 /// (rather than the mockup's implied "+" affordance, which had no visible
 /// control to mirror) presents `AddTodoForm` full-screen. On macOS it
-/// instead follows that project's turn 3 ("Today" header, List/Plot tabs)
-/// — see CLAUDE.md's platform-branch convention.
+/// instead follows that project's turn 3 ("Today" header, tab switcher),
+/// with the mockup's Plot tab replaced by a Calendar tab (Google Calendar or
+/// macOS Calendar) — see CLAUDE.md's platform-branch convention.
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItemModel.createdAt) private var items: [TodoItemModel]
 
     #if os(macOS)
     @State private var viewMode: PriorityViewMode = .list
-    @State private var selectedID: UUID?
+    @State private var calendarStore = CalendarStore()
     #endif
 
     /// Ranks the fetched models via `PriorityScorer.rank(_:)` — the score is
@@ -65,13 +66,20 @@ struct ContentView: View {
         items.filter { !$0.isDone }.reduce(0) { $0 + $1.estimatedMinutes }
     }
 
+    /// Open tasks with a due date, overlaid on the calendar's due days.
+    private var dueTaskMarkers: [DueTaskMarker] {
+        items.compactMap { item in
+            guard !item.isDone, let dueDate = item.dueDate else { return nil }
+            return DueTaskMarker(id: item.id, title: item.title, dueDate: dueDate)
+        }
+    }
+
     private var macBody: some View {
         VStack(alignment: .leading, spacing: 18) {
             macHeader
-            if items.isEmpty {
-                EmptyStateView()
-                    .frame(maxWidth: .infinity)
-            } else if viewMode == .list {
+            if viewMode == .calendar {
+                CalendarTabView(store: calendarStore, dueTasks: dueTaskMarkers)
+            } else {
                 PriorityListView(
                     items: rankedItems,
                     scores: scores,
@@ -79,15 +87,6 @@ struct ContentView: View {
                     onDelete: delete,
                     onSave: updateItem,
                     onAdd: addItem
-                )
-            } else {
-                PriorityPlotView(
-                    items: rankedItems,
-                    scores: scores,
-                    selectedID: $selectedID,
-                    onToggleDone: toggleDone,
-                    onDelete: delete,
-                    onSave: updateItem
                 )
             }
         }
@@ -112,9 +111,7 @@ struct ContentView: View {
                     .foregroundStyle(MacPriorityTheme.ink(0.52))
             }
             Spacer()
-            if !items.isEmpty {
-                viewModeSwitcher
-            }
+            viewModeSwitcher
         }
     }
 
@@ -127,7 +124,7 @@ struct ContentView: View {
     private var viewModeSwitcher: some View {
         HStack(spacing: 4) {
             switcherButton("List", mode: .list)
-            switcherButton("Plot", mode: .plot)
+            switcherButton("Calendar", mode: .calendar)
         }
         .padding(4)
         .background(MacPriorityTheme.subtleCard)

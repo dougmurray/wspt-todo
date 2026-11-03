@@ -7,48 +7,57 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0117447509A92CE40E2715ED /* CalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90F73A617B430985D400D102 /* CalendarStore.swift */; };
 		07665E3DF994483DE2F56C73 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64899B35FC48D3982F06F531 /* EmptyStateView.swift */; };
 		12ED6F792AC5C78A223F4026 /* EditTaskPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */; };
 		211192880286D09872439158 /* TodoItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B87898EFE9894DF363F90AC /* TodoItemModel.swift */; };
 		218D9CE9FD50E7DE57A21B91 /* IOSPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */; };
 		24A76ED342B3B713C9977C4A /* WSPTTodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */; };
+		2E665A0C4C335CC3F182534F /* CalendarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2435B5213F424A5C98655FC0 /* CalendarTabView.swift */; };
 		3669E953321DFFDFA258BA6C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD2B12CCC45DE49FFE7493B /* ContentView.swift */; };
 		386DED8AE0380F15AFFE7EF5 /* MacPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */; };
-		418842A4F0EE50EE484E066F /* PriorityPlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56184DCBD5920D74E356E8B3 /* PriorityPlotView.swift */; };
+		5C46DB429C64544F36D739EE /* CalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90F73A617B430985D400D102 /* CalendarStore.swift */; };
 		609174E3839CEE732D686BDE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD2B12CCC45DE49FFE7493B /* ContentView.swift */; };
+		69D16EBDFB3E12935013AF1E /* GoogleCalendarClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9ECC530A007EAA1723C71AD /* GoogleCalendarClient.swift */; };
 		79BF71FFDCC32093FD5F4EE7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 841F4FE1B5066CAD485B227C /* Assets.xcassets */; };
 		8241B14525BD0B16A8790474 /* WSPTCore in Frameworks */ = {isa = PBXBuildFile; productRef = 692418665412532CD635E493 /* WSPTCore */; };
 		92F0D61F958C6E7C47760E49 /* MacPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */; };
 		948FDA0A766D98610D301F5E /* EditTaskPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */; };
 		9B8091977E7CC809885B434C /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64899B35FC48D3982F06F531 /* EmptyStateView.swift */; };
+		B04D2E840A47EB7EA076B385 /* CalendarModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9455C71822FFFDDBABCB80 /* CalendarModels.swift */; };
 		B5A9B989EAD512E4E868D937 /* TodoItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B87898EFE9894DF363F90AC /* TodoItemModel.swift */; };
 		B6E93D2F43A4061F7BC51826 /* PriorityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58810AB13C7047D4CFA43ECA /* PriorityListView.swift */; };
 		C1CF9F5C5ACD224E295B91CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 841F4FE1B5066CAD485B227C /* Assets.xcassets */; };
-		C30B91ACD77C24B853E26475 /* PriorityPlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56184DCBD5920D74E356E8B3 /* PriorityPlotView.swift */; };
 		CA4E6E1A688DC2F800C7B587 /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */; };
 		CF2FA845EBAB930A3ADD52E6 /* AddTodoForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */; };
 		D464EEE36D92A14E45024951 /* WSPTTodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */; };
+		D6AD07492D0738F5AA06FE88 /* GoogleCalendarClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9ECC530A007EAA1723C71AD /* GoogleCalendarClient.swift */; };
 		ED3474DF7415F5951786E062 /* WSPTCore in Frameworks */ = {isa = PBXBuildFile; productRef = 56B88E657079963180F9729E /* WSPTCore */; };
 		EFA46406CEF1163984604A69 /* AddTodoForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */; };
+		F31E216140A7D1C0E616DBB9 /* CalendarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2435B5213F424A5C98655FC0 /* CalendarTabView.swift */; };
 		F3F3A831E46E7D0E45E68289 /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */; };
 		F424D3935175801EBFC83B81 /* PriorityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58810AB13C7047D4CFA43ECA /* PriorityListView.swift */; };
+		F74D65375DC5D60EC8E9B7D8 /* CalendarModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9455C71822FFFDDBABCB80 /* CalendarModels.swift */; };
 		FFDC97C727F86701FA21BE2E /* IOSPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTaskPopover.swift; sourceTree = "<group>"; };
 		200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSPTTodoApp.swift; sourceTree = "<group>"; };
+		2435B5213F424A5C98655FC0 /* CalendarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTabView.swift; sourceTree = "<group>"; };
 		4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPriorityTheme.swift; sourceTree = "<group>"; };
 		4B87898EFE9894DF363F90AC /* TodoItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemModel.swift; sourceTree = "<group>"; };
-		56184DCBD5920D74E356E8B3 /* PriorityPlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriorityPlotView.swift; sourceTree = "<group>"; };
 		58810AB13C7047D4CFA43ECA /* PriorityListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriorityListView.swift; sourceTree = "<group>"; };
 		5CD2B12CCC45DE49FFE7493B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		64899B35FC48D3982F06F531 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoRow.swift; sourceTree = "<group>"; };
 		7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTodoForm.swift; sourceTree = "<group>"; };
 		841F4FE1B5066CAD485B227C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		90F73A617B430985D400D102 /* CalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarStore.swift; sourceTree = "<group>"; };
+		9E9455C71822FFFDDBABCB80 /* CalendarModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarModels.swift; sourceTree = "<group>"; };
 		A006C6C0A97E68CDEEF9DA8C /* WSPTTodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WSPTTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A54F7B3501B61A250E9C199D /* WSPTTodo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WSPTTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9ECC530A007EAA1723C71AD /* GoogleCalendarClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleCalendarClient.swift; sourceTree = "<group>"; };
 		BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPriorityTheme.swift; sourceTree = "<group>"; };
 		C7D70A8107196B36E9DEDFBC /* WSPTCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WSPTCore; path = ../WSPTCore; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -73,6 +82,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		318BC5489327286793F609E2 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				9E9455C71822FFFDDBABCB80 /* CalendarModels.swift */,
+				90F73A617B430985D400D102 /* CalendarStore.swift */,
+				B9ECC530A007EAA1723C71AD /* GoogleCalendarClient.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
 		8670F929D9E3B6A5AEE9D391 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,13 +112,13 @@
 			isa = PBXGroup;
 			children = (
 				7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */,
+				2435B5213F424A5C98655FC0 /* CalendarTabView.swift */,
 				5CD2B12CCC45DE49FFE7493B /* ContentView.swift */,
 				1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */,
 				64899B35FC48D3982F06F531 /* EmptyStateView.swift */,
 				BA8325FC93DC3E9B4CA81331 /* IOSPriorityTheme.swift */,
 				4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */,
 				58810AB13C7047D4CFA43ECA /* PriorityListView.swift */,
-				56184DCBD5920D74E356E8B3 /* PriorityPlotView.swift */,
 				6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */,
 			);
 			path = Views;
@@ -110,6 +129,7 @@
 			children = (
 				841F4FE1B5066CAD485B227C /* Assets.xcassets */,
 				200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */,
+				318BC5489327286793F609E2 /* Calendar */,
 				8D80DF94927371556E5DFEFE /* Persistence */,
 				A0FD0EB78BE05C77339475DA /* Views */,
 			);
@@ -244,13 +264,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFA46406CEF1163984604A69 /* AddTodoForm.swift in Sources */,
+				B04D2E840A47EB7EA076B385 /* CalendarModels.swift in Sources */,
+				0117447509A92CE40E2715ED /* CalendarStore.swift in Sources */,
+				2E665A0C4C335CC3F182534F /* CalendarTabView.swift in Sources */,
 				3669E953321DFFDFA258BA6C /* ContentView.swift in Sources */,
 				12ED6F792AC5C78A223F4026 /* EditTaskPopover.swift in Sources */,
 				07665E3DF994483DE2F56C73 /* EmptyStateView.swift in Sources */,
+				D6AD07492D0738F5AA06FE88 /* GoogleCalendarClient.swift in Sources */,
 				FFDC97C727F86701FA21BE2E /* IOSPriorityTheme.swift in Sources */,
 				386DED8AE0380F15AFFE7EF5 /* MacPriorityTheme.swift in Sources */,
 				B6E93D2F43A4061F7BC51826 /* PriorityListView.swift in Sources */,
-				418842A4F0EE50EE484E066F /* PriorityPlotView.swift in Sources */,
 				211192880286D09872439158 /* TodoItemModel.swift in Sources */,
 				F3F3A831E46E7D0E45E68289 /* TodoRow.swift in Sources */,
 				D464EEE36D92A14E45024951 /* WSPTTodoApp.swift in Sources */,
@@ -262,13 +285,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF2FA845EBAB930A3ADD52E6 /* AddTodoForm.swift in Sources */,
+				F74D65375DC5D60EC8E9B7D8 /* CalendarModels.swift in Sources */,
+				5C46DB429C64544F36D739EE /* CalendarStore.swift in Sources */,
+				F31E216140A7D1C0E616DBB9 /* CalendarTabView.swift in Sources */,
 				609174E3839CEE732D686BDE /* ContentView.swift in Sources */,
 				948FDA0A766D98610D301F5E /* EditTaskPopover.swift in Sources */,
 				9B8091977E7CC809885B434C /* EmptyStateView.swift in Sources */,
+				69D16EBDFB3E12935013AF1E /* GoogleCalendarClient.swift in Sources */,
 				218D9CE9FD50E7DE57A21B91 /* IOSPriorityTheme.swift in Sources */,
 				92F0D61F958C6E7C47760E49 /* MacPriorityTheme.swift in Sources */,
 				F424D3935175801EBFC83B81 /* PriorityListView.swift in Sources */,
-				C30B91ACD77C24B853E26475 /* PriorityPlotView.swift in Sources */,
 				B5A9B989EAD512E4E868D937 /* TodoItemModel.swift in Sources */,
 				CA4E6E1A688DC2F800C7B587 /* TodoRow.swift in Sources */,
 				24A76ED342B3B713C9977C4A /* WSPTTodoApp.swift in Sources */,

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Shared visual language for the macOS "Today" screen, translating the
 /// Claude Design mockup (warm off-white, serif headings, one green accent)
-/// into design tokens `PriorityListView` and `PriorityPlotView` both draw
+/// into design tokens `PriorityListView` and `CalendarTabView` both draw
 /// from. macOS-only: iOS keeps its existing look, per CLAUDE.md's
 /// platform-branch convention.
 ///

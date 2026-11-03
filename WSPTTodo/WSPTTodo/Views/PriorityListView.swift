@@ -49,6 +49,12 @@ struct PriorityListView: View {
                 }
 
                 AddTaskBar(onAdd: onAdd)
+
+                // With no tasks yet, the add bar is the only thing on the
+                // tab, so the empty-state hint sits below it ("Add one above").
+                if items.isEmpty {
+                    EmptyStateView()
+                }
             }
             .padding(.vertical, 2)
         }
