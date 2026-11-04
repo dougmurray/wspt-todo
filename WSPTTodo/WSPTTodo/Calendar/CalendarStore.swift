@@ -1,4 +1,3 @@
-#if os(macOS)
 import SwiftUI
 import EventKit
 import AuthenticationServices
@@ -98,7 +97,11 @@ final class CalendarStore {
             }
         }
         guard granted else {
+            #if os(macOS)
             errorMessage = "Calendar access was denied. Enable it for WSPT Todo in System Settings → Privacy & Security → Calendars."
+            #else
+            errorMessage = "Calendar access was denied. Enable it for WSPT Todo in Settings → Privacy & Security → Calendars."
+            #endif
             return
         }
         setSource(.system)
@@ -230,4 +233,3 @@ final class CalendarStore {
         return (calendars, events)
     }
 }
-#endif

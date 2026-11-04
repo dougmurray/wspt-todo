@@ -22,6 +22,9 @@ enum MacPriorityTheme {
     static let accent = Color(red: 0x3f / 255, green: 0x7a / 255, blue: 0x4e / 255)
     static let accentTint = Color(red: 0xee / 255, green: 0xf3 / 255, blue: 0xec / 255)
     static let accentBorder = accent.opacity(0.16)
+    /// Accent used as text on `accentTint` — same as `accent` on this light
+    /// palette; iOS's dark `CalendarTheme` swaps in a lighter green.
+    static let accentInk = accent
 
     static func ink(_ opacity: Double) -> Color { ink.opacity(opacity) }
 

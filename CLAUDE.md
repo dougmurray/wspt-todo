@@ -121,6 +121,13 @@ Without a signed-in iCloud account on the runtime device/Simulator, SwiftData lo
 NoAccount` CloudKit setup error and falls back to local-only storage rather than crashing — that's
 expected, not a bug, when testing on a fresh Simulator.
 
+**Calendar view.** `Calendar/` (`CalendarStore`, `GoogleCalendarClient`, models) and
+`Views/CalendarTabView.swift` are shared by both platforms. macOS shows it as the window's Calendar
+tab; on iPhone, `ContentView` swaps the queue for it whenever `verticalSizeClass == .compact`
+(landscape), so iPad keeps the queue in both orientations. Its colors/fonts come from
+`CalendarTheme` — a typealias for `MacPriorityTheme` on macOS, a dark palette matching
+`IOSPriorityTheme` on iOS — so a new token used by the calendar must be added to both.
+
 **Platform-specific UI branches** use `#if os(iOS)` / `#if os(macOS)` inline within shared view
 files (see `ContentView.swift`, `TodoRow.swift`, `AddTodoForm.swift`) rather than separate
 per-platform view files. When adding a platform-conditional modifier, verify both `WSPTTodo_iOS`

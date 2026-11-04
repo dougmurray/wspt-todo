@@ -32,12 +32,23 @@ targets:
           UIApplicationSupportsMultipleScenes: true
         UIBackgroundModes:
           - remote-notification
+        # iPhone shows the calendar in landscape (ContentView), so landscape
+        # must be allowed; upside-down stays off on iPhone per HIG.
+        UISupportedInterfaceOrientations~iphone:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         NSCalendarsFullAccessUsageDescription: WSPT Todo shows your calendar events next to your task queue. It never changes your events.
         NSCalendarsUsageDescription: WSPT Todo shows your calendar events next to your task queue. It never changes your events.
         # OAuth client ID (an "iOS"-type client in Google Cloud Console, bundle
         # ID com.douglassmurray.wspttodo, Google Calendar API enabled) for the
-        # macOS Calendar tab's "Sign in with Google". Leave empty to enter it
-        # in-app instead.
+        # Calendar view's "Sign in with Google" (macOS tab / iPhone
+        # landscape). Leave empty to enter it in-app instead.
         GoogleOAuthClientID: ""
     entitlements:
       path: Generated/WSPTTodo.entitlements

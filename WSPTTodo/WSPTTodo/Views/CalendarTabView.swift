@@ -1,4 +1,3 @@
-#if os(macOS)
 import SwiftUI
 import AuthenticationServices
 
@@ -8,9 +7,11 @@ enum CalendarDisplayMode: String {
     case week
 }
 
-/// The macOS "Calendar" tab: connect a calendar (Google first, or anything
-/// in macOS Calendar via EventKit), then browse it by month or week. Open
-/// tasks with due dates are overlaid on their due day.
+/// The Calendar view: connect a calendar (Google first, or anything in the
+/// system Calendar app via EventKit), then browse it by month or week. Open
+/// tasks with due dates are overlaid on their due day. On macOS it's the
+/// window's "Calendar" tab; on iPhone it replaces the queue in landscape
+/// (see `ContentView`). Colors/fonts come from `CalendarTheme`.
 struct CalendarTabView: View {
     let store: CalendarStore
     let dueTasks: [DueTaskMarker]
@@ -46,9 +47,9 @@ struct CalendarTabView: View {
                         WeekGridView(days: weekDays, events: store.visibleEvents, dueTasks: dueTasks)
                     }
                 }
-                .background(MacPriorityTheme.card)
+                .background(CalendarTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(MacPriorityTheme.ink(0.08)))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalendarTheme.ink(0.08)))
             }
             .task(id: LoadKey(range: visibleRange, source: store.source)) {
                 await store.load(range: visibleRange)
@@ -107,15 +108,15 @@ struct CalendarTabView: View {
                 iconButton("chevron.right", help: "Next") { step(1) }
             }
             Text(title)
-                .font(MacPriorityTheme.serif(20))
-                .foregroundStyle(MacPriorityTheme.ink)
+                .font(CalendarTheme.serif(20))
+                .foregroundStyle(CalendarTheme.ink)
             Button("Today") { anchorDate = .now }
                 .buttonStyle(.plain)
-                .font(MacPriorityTheme.sans(12, weight: .medium))
-                .foregroundStyle(MacPriorityTheme.accent)
+                .font(CalendarTheme.sans(12, weight: .medium))
+                .foregroundStyle(CalendarTheme.accentInk)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(MacPriorityTheme.accentTint)
+                .background(CalendarTheme.accentTint)
                 .clipShape(Capsule())
             if store.isLoading {
                 ProgressView().controlSize(.small)
@@ -130,7 +131,7 @@ struct CalendarTabView: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(MacPriorityTheme.ink(0.7))
+                .foregroundStyle(CalendarTheme.ink(0.7))
                 .frame(width: 26, height: 26)
                 .contentShape(Rectangle())
         }
@@ -144,20 +145,20 @@ struct CalendarTabView: View {
             modeButton("Week", .week)
         }
         .padding(3)
-        .background(MacPriorityTheme.subtleCard)
+        .background(CalendarTheme.subtleCard)
         .clipShape(Capsule())
-        .overlay(Capsule().stroke(MacPriorityTheme.ink(0.1)))
+        .overlay(Capsule().stroke(CalendarTheme.ink(0.1)))
     }
 
     private func modeButton(_ label: String, _ mode: CalendarDisplayMode) -> some View {
         let isSelected = displayMode == mode
         return Button { displayMode = mode } label: {
             Text(label)
-                .font(MacPriorityTheme.sans(12, weight: .medium))
-                .foregroundStyle(isSelected ? MacPriorityTheme.ink : MacPriorityTheme.ink(0.55))
+                .font(CalendarTheme.sans(12, weight: .medium))
+                .foregroundStyle(isSelected ? CalendarTheme.ink : CalendarTheme.ink(0.55))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 5)
-                .background(isSelected ? MacPriorityTheme.card : Color.clear)
+                .background(isSelected ? CalendarTheme.card : Color.clear)
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -183,8 +184,16 @@ struct CalendarTabView: View {
             }
         } label: {
             Image(systemName: "calendar.badge.checkmark")
+                #if os(iOS)
+                .font(.system(size: 17))
+                .foregroundStyle(CalendarTheme.ink(0.8))
+                .frame(width: 32, height: 28)
+                .contentShape(Rectangle())
+                #endif
         }
+        #if os(macOS)
         .menuStyle(.borderlessButton)
+        #endif
         .fixedSize()
         .help("Calendars")
     }
@@ -203,11 +212,11 @@ private struct ConnectCalendarView: View {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Connect a calendar")
-                        .font(MacPriorityTheme.serif(22))
-                        .foregroundStyle(MacPriorityTheme.ink)
+                        .font(CalendarTheme.serif(22))
+                        .foregroundStyle(CalendarTheme.ink)
                     Text("See your schedule next to your queue. Access is read-only — WSPT Todo never changes your events.")
-                        .font(MacPriorityTheme.sans(13))
-                        .foregroundStyle(MacPriorityTheme.ink(0.55))
+                        .font(CalendarTheme.sans(13))
+                        .foregroundStyle(CalendarTheme.ink(0.55))
                 }
 
                 if let error = store.errorMessage {
@@ -230,13 +239,14 @@ private struct ConnectCalendarView: View {
             HStack(spacing: 10) {
                 Image(systemName: "g.circle.fill")
                     .font(.system(size: 22))
-                    .foregroundStyle(MacPriorityTheme.accent)
+                    .foregroundStyle(CalendarTheme.accent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Google Calendar")
-                        .font(MacPriorityTheme.sans(15, weight: .semibold))
+                        .font(CalendarTheme.sans(15, weight: .semibold))
+                        .foregroundStyle(CalendarTheme.ink)
                     Text("Sign in with your Google account. Recommended.")
-                        .font(MacPriorityTheme.sans(12))
-                        .foregroundStyle(MacPriorityTheme.ink(0.55))
+                        .font(CalendarTheme.sans(12))
+                        .foregroundStyle(CalendarTheme.ink(0.55))
                 }
                 Spacer()
             }
@@ -244,23 +254,27 @@ private struct ConnectCalendarView: View {
             if store.bundledGoogleClientID == nil {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("OAuth client ID")
-                        .font(MacPriorityTheme.label())
-                        .foregroundStyle(MacPriorityTheme.ink(0.5))
+                        .font(CalendarTheme.label())
+                        .foregroundStyle(CalendarTheme.ink(0.5))
                     TextField("1234567890-abc….apps.googleusercontent.com", text: $clientIDDraft)
                         .textFieldStyle(.roundedBorder)
-                        .font(MacPriorityTheme.sans(12))
+                        .font(CalendarTheme.sans(12))
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        #endif
                         .onChange(of: clientIDDraft) { _, newValue in
                             store.enteredGoogleClientID = newValue
                         }
                     Text("Create an **iOS** OAuth client in Google Cloud Console with bundle ID `com.douglassmurray.wspttodo`, and enable the Google Calendar API for that project. Or set `GoogleOAuthClientID` in project.yml to skip this field.")
-                        .font(MacPriorityTheme.sans(11))
-                        .foregroundStyle(MacPriorityTheme.ink(0.5))
+                        .font(CalendarTheme.sans(11))
+                        .foregroundStyle(CalendarTheme.ink(0.5))
                         .fixedSize(horizontal: false, vertical: true)
                     Button("Open Google Cloud Console") {
                         openURL(URL(string: "https://console.cloud.google.com/apis/credentials")!)
                     }
-                    .buttonStyle(.link)
-                    .font(MacPriorityTheme.sans(11))
+                    .linkButtonStyle()
+                    .font(CalendarTheme.sans(11))
                 }
             }
 
@@ -268,20 +282,28 @@ private struct ConnectCalendarView: View {
                 Task { await store.connectGoogle(using: webAuthenticationSession) }
             } label: {
                 Text("Sign in with Google")
-                    .font(MacPriorityTheme.sans(13, weight: .semibold))
+                    .font(CalendarTheme.sans(13, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(MacPriorityTheme.accent.opacity(store.effectiveGoogleClientID == nil ? 0.4 : 1))
+                    .background(CalendarTheme.accent.opacity(store.effectiveGoogleClientID == nil ? 0.4 : 1))
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
             .disabled(store.effectiveGoogleClientID == nil || store.isConnecting)
         }
         .padding(18)
-        .background(MacPriorityTheme.card)
+        .background(CalendarTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(MacPriorityTheme.accentBorder))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalendarTheme.accentBorder))
+    }
+
+    private var systemCardDetail: String {
+        #if os(macOS)
+        "Use the accounts already in the Calendar app — iCloud, Exchange, or a Google account added in System Settings → Internet Accounts."
+        #else
+        "Use the accounts already in the Calendar app — iCloud, Exchange, or a Google account added in Settings → Apps → Calendar → Calendar Accounts."
+        #endif
     }
 
     private var systemCard: some View {
@@ -289,13 +311,14 @@ private struct ConnectCalendarView: View {
             HStack(spacing: 10) {
                 Image(systemName: "calendar")
                     .font(.system(size: 20))
-                    .foregroundStyle(MacPriorityTheme.ink(0.6))
+                    .foregroundStyle(CalendarTheme.ink(0.6))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("macOS Calendar")
-                        .font(MacPriorityTheme.sans(15, weight: .semibold))
-                    Text("Use the accounts already in the Calendar app — iCloud, Exchange, or a Google account added in System Settings → Internet Accounts.")
-                        .font(MacPriorityTheme.sans(12))
-                        .foregroundStyle(MacPriorityTheme.ink(0.55))
+                    Text(CalendarSource.system.displayName)
+                        .font(CalendarTheme.sans(15, weight: .semibold))
+                        .foregroundStyle(CalendarTheme.ink)
+                    Text(systemCardDetail)
+                        .font(CalendarTheme.sans(12))
+                        .foregroundStyle(CalendarTheme.ink(0.55))
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
@@ -304,21 +327,21 @@ private struct ConnectCalendarView: View {
                 Task { await store.connectSystemCalendar() }
             } label: {
                 Text("Allow Calendar Access")
-                    .font(MacPriorityTheme.sans(13, weight: .medium))
-                    .foregroundStyle(MacPriorityTheme.ink)
+                    .font(CalendarTheme.sans(13, weight: .medium))
+                    .foregroundStyle(CalendarTheme.ink)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(MacPriorityTheme.subtleCard)
+                    .background(CalendarTheme.subtleCard)
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(MacPriorityTheme.ink(0.12)))
+                    .overlay(Capsule().stroke(CalendarTheme.ink(0.12)))
             }
             .buttonStyle(.plain)
             .disabled(store.isConnecting)
         }
         .padding(18)
-        .background(MacPriorityTheme.card)
+        .background(CalendarTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(MacPriorityTheme.ink(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalendarTheme.ink(0.08)))
     }
 }
 
@@ -331,15 +354,15 @@ private struct ErrorBanner: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
             Text(message)
-                .font(MacPriorityTheme.sans(12))
-                .foregroundStyle(MacPriorityTheme.ink(0.8))
+                .font(CalendarTheme.sans(12))
+                .foregroundStyle(CalendarTheme.ink(0.8))
                 .fixedSize(horizontal: false, vertical: true)
             Spacer()
             Button(action: onDismiss) {
                 Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
             }
             .buttonStyle(.plain)
-            .foregroundStyle(MacPriorityTheme.ink(0.4))
+            .foregroundStyle(CalendarTheme.ink(0.4))
         }
         .padding(10)
         .background(Color.orange.opacity(0.08))
@@ -348,6 +371,27 @@ private struct ErrorBanner: View {
 }
 
 // MARK: - Shared pieces
+
+private extension View {
+    /// macOS's inline `.link` style; iOS has no such style, so a plain
+    /// accent-colored button stands in.
+    @ViewBuilder
+    func linkButtonStyle() -> some View {
+        #if os(macOS)
+        buttonStyle(.link)
+        #else
+        buttonStyle(.plain).foregroundStyle(CalendarTheme.accentInk)
+        #endif
+    }
+
+    /// Keeps detail/overflow popovers as real popovers on iPhone (which
+    /// would otherwise turn them into full sheets) and gives them the
+    /// calendar's card color so the theme's ink stays legible.
+    func calendarPopoverPresentation() -> some View {
+        presentationCompactAdaptation(.popover)
+            .presentationBackground(CalendarTheme.card)
+    }
+}
 
 private func eventsOn(_ day: Date, in events: [CalendarEvent]) -> [CalendarEvent] {
     let calendar = Calendar.current
@@ -394,7 +438,7 @@ private struct EventDetailPopover: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Circle().fill(event.color.color).frame(width: 9, height: 9)
                 Text(event.title)
-                    .font(MacPriorityTheme.sans(14, weight: .semibold))
+                    .font(CalendarTheme.sans(14, weight: .semibold))
                     .fixedSize(horizontal: false, vertical: true)
             }
             Label(timeRangeLabel(event), systemImage: "clock")
@@ -405,11 +449,11 @@ private struct EventDetailPopover: View {
             Label(event.calendarTitle, systemImage: "calendar")
             if let url = event.url {
                 Button("Open in Google Calendar") { openURL(url) }
-                    .buttonStyle(.link)
+                    .linkButtonStyle()
             }
         }
-        .font(MacPriorityTheme.sans(12))
-        .foregroundStyle(MacPriorityTheme.ink(0.8))
+        .font(CalendarTheme.sans(12))
+        .foregroundStyle(CalendarTheme.ink(0.8))
         .padding(14)
         .frame(width: 280, alignment: .leading)
     }
@@ -431,14 +475,14 @@ private struct EventChip: View {
                     Circle().fill(event.color.color).frame(width: 6, height: 6)
                     if showTime {
                         Text(shortTime(event.start))
-                            .foregroundStyle(MacPriorityTheme.ink(0.5))
+                            .foregroundStyle(CalendarTheme.ink(0.5))
                     }
                     Text(event.title)
-                        .foregroundStyle(MacPriorityTheme.ink(0.85))
+                        .foregroundStyle(CalendarTheme.ink(0.85))
                 }
                 Spacer(minLength: 0)
             }
-            .font(MacPriorityTheme.sans(10.5))
+            .font(CalendarTheme.sans(10.5))
             .lineLimit(1)
             .padding(.horizontal, 4)
             .frame(height: 16)
@@ -448,7 +492,7 @@ private struct EventChip: View {
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showDetail, arrowEdge: .trailing) {
-            EventDetailPopover(event: event)
+            EventDetailPopover(event: event).calendarPopoverPresentation()
         }
     }
 }
@@ -463,13 +507,13 @@ private struct TaskChip: View {
             Text(task.title)
             Spacer(minLength: 0)
         }
-        .font(MacPriorityTheme.sans(10.5, weight: .medium))
-        .foregroundStyle(MacPriorityTheme.accent)
+        .font(CalendarTheme.sans(10.5, weight: .medium))
+        .foregroundStyle(CalendarTheme.accentInk)
         .lineLimit(1)
         .padding(.horizontal, 4)
         .frame(height: 16)
-        .background(MacPriorityTheme.accentTint)
-        .overlay(RoundedRectangle(cornerRadius: 4).stroke(MacPriorityTheme.accentBorder))
+        .background(CalendarTheme.accentTint)
+        .overlay(RoundedRectangle(cornerRadius: 4).stroke(CalendarTheme.accentBorder))
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .help("Task due: \(task.title)")
     }
@@ -483,9 +527,9 @@ private struct WeekdayHeader: View {
         HStack(spacing: 0) {
             ForEach(ordered, id: \.self) { symbol in
                 Text(symbol.uppercased())
-                    .font(MacPriorityTheme.sans(10, weight: .semibold))
+                    .font(CalendarTheme.sans(10, weight: .semibold))
                     .tracking(0.8)
-                    .foregroundStyle(MacPriorityTheme.ink(0.45))
+                    .foregroundStyle(CalendarTheme.ink(0.45))
                     .frame(maxWidth: .infinity)
             }
         }
@@ -505,7 +549,7 @@ private struct MonthGridView: View {
     var body: some View {
         VStack(spacing: 0) {
             WeekdayHeader()
-            Divider().overlay(MacPriorityTheme.ink(0.06))
+            Divider().overlay(CalendarTheme.ink(0.06))
             VStack(spacing: 0) {
                 ForEach(0..<6, id: \.self) { row in
                     HStack(spacing: 0) {
@@ -518,10 +562,10 @@ private struct MonthGridView: View {
                                 tasks: tasksDue(on: day, in: dueTasks),
                                 onOpenWeek: { onOpenWeek(day) }
                             )
-                            if column < 6 { Divider().overlay(MacPriorityTheme.ink(0.04)) }
+                            if column < 6 { Divider().overlay(CalendarTheme.ink(0.04)) }
                         }
                     }
-                    if row < 5 { Divider().overlay(MacPriorityTheme.ink(0.06)) }
+                    if row < 5 { Divider().overlay(CalendarTheme.ink(0.06)) }
                 }
             }
         }
@@ -551,10 +595,10 @@ private struct MonthDayCell: View {
             VStack(alignment: .leading, spacing: 1) {
                 HStack {
                     Text(day.formatted(.dateTime.day()))
-                        .font(MacPriorityTheme.sans(11.5, weight: isToday ? .bold : .medium))
-                        .foregroundStyle(isToday ? .white : MacPriorityTheme.ink(isInMonth ? 0.8 : 0.3))
+                        .font(CalendarTheme.sans(11.5, weight: isToday ? .bold : .medium))
+                        .foregroundStyle(isToday ? .white : CalendarTheme.ink(isInMonth ? 0.8 : 0.3))
                         .frame(minWidth: 20, minHeight: 20)
-                        .background(isToday ? MacPriorityTheme.accent : Color.clear)
+                        .background(isToday ? CalendarTheme.accent : Color.clear)
                         .clipShape(Circle())
                     Spacer()
                 }
@@ -565,12 +609,14 @@ private struct MonthDayCell: View {
                 if needsMore {
                     Button { showAll = true } label: {
                         Text("+\(itemCount - shownTasks.count - shownEvents.count) more")
-                            .font(MacPriorityTheme.sans(10, weight: .medium))
-                            .foregroundStyle(MacPriorityTheme.ink(0.5))
+                            .font(CalendarTheme.sans(10, weight: .medium))
+                            .foregroundStyle(CalendarTheme.ink(0.5))
                             .padding(.horizontal, 4)
                     }
                     .buttonStyle(.plain)
-                    .popover(isPresented: $showAll, arrowEdge: .trailing) { dayList }
+                    .popover(isPresented: $showAll, arrowEdge: .trailing) {
+                        dayList.calendarPopoverPresentation()
+                    }
                 }
                 Spacer(minLength: 0)
             }
@@ -579,16 +625,21 @@ private struct MonthDayCell: View {
             .opacity(isInMonth ? 1 : 0.55)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(isInMonth ? Color.clear : MacPriorityTheme.subtleCard.opacity(0.6))
+        .background(isInMonth ? Color.clear : CalendarTheme.subtleCard.opacity(0.6))
         .contentShape(Rectangle())
+        #if os(macOS)
         .onTapGesture(count: 2, perform: onOpenWeek)
         .help("Double-click to open this week")
+        #else
+        .onTapGesture(perform: onOpenWeek)
+        #endif
     }
 
     private var dayList: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(day.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-                .font(MacPriorityTheme.sans(13, weight: .semibold))
+                .font(CalendarTheme.sans(13, weight: .semibold))
+                .foregroundStyle(CalendarTheme.ink)
                 .padding(.bottom, 4)
             ForEach(tasks) { TaskChip(task: $0) }
             ForEach(events) { EventChip(event: $0) }
@@ -611,9 +662,9 @@ private struct WeekGridView: View {
     var body: some View {
         VStack(spacing: 0) {
             dayHeader
-            Divider().overlay(MacPriorityTheme.ink(0.06))
+            Divider().overlay(CalendarTheme.ink(0.06))
             allDayRow
-            Divider().overlay(MacPriorityTheme.ink(0.1))
+            Divider().overlay(CalendarTheme.ink(0.1))
             ScrollViewReader { proxy in
                 ScrollView(.vertical) {
                     ZStack(alignment: .topLeading) {
@@ -624,7 +675,7 @@ private struct WeekGridView: View {
                                 DayColumn(day: day, events: timedEvents(on: day), hourHeight: hourHeight)
                                     .frame(maxWidth: .infinity)
                                     .overlay(alignment: .leading) {
-                                        Rectangle().fill(MacPriorityTheme.ink(0.05)).frame(width: 1)
+                                        Rectangle().fill(CalendarTheme.ink(0.05)).frame(width: 1)
                                     }
                             }
                         }
@@ -647,14 +698,14 @@ private struct WeekGridView: View {
                 let isToday = Calendar.current.isDateInToday(day)
                 HStack(spacing: 5) {
                     Text(day.formatted(.dateTime.weekday(.abbreviated)).uppercased())
-                        .font(MacPriorityTheme.sans(10, weight: .semibold))
+                        .font(CalendarTheme.sans(10, weight: .semibold))
                         .tracking(0.8)
-                        .foregroundStyle(MacPriorityTheme.ink(0.45))
+                        .foregroundStyle(CalendarTheme.ink(0.45))
                     Text(day.formatted(.dateTime.day()))
-                        .font(MacPriorityTheme.sans(13, weight: isToday ? .bold : .medium))
-                        .foregroundStyle(isToday ? .white : MacPriorityTheme.ink(0.8))
+                        .font(CalendarTheme.sans(13, weight: isToday ? .bold : .medium))
+                        .foregroundStyle(isToday ? .white : CalendarTheme.ink(0.8))
                         .frame(minWidth: 22, minHeight: 22)
-                        .background(isToday ? MacPriorityTheme.accent : Color.clear)
+                        .background(isToday ? CalendarTheme.accent : Color.clear)
                         .clipShape(Circle())
                 }
                 .frame(maxWidth: .infinity)
@@ -666,8 +717,8 @@ private struct WeekGridView: View {
     private var allDayRow: some View {
         HStack(alignment: .top, spacing: 0) {
             Text("all-day")
-                .font(MacPriorityTheme.sans(9.5))
-                .foregroundStyle(MacPriorityTheme.ink(0.4))
+                .font(CalendarTheme.sans(9.5))
+                .foregroundStyle(CalendarTheme.ink(0.4))
                 .frame(width: gutter - 6, alignment: .trailing)
                 .padding(.trailing, 6)
                 .padding(.top, 2)
@@ -690,13 +741,13 @@ private struct WeekGridView: View {
             ForEach(0..<24, id: \.self) { hour in
                 HStack(alignment: .top, spacing: 0) {
                     Text(hourLabel(hour))
-                        .font(MacPriorityTheme.sans(9.5))
-                        .foregroundStyle(MacPriorityTheme.ink(0.4))
+                        .font(CalendarTheme.sans(9.5))
+                        .foregroundStyle(CalendarTheme.ink(0.4))
                         .frame(width: gutter - 8, alignment: .trailing)
                         .padding(.trailing, 8)
                         .offset(y: -6)
                         .opacity(hour == 0 ? 0 : 1)
-                    Rectangle().fill(MacPriorityTheme.ink(0.06)).frame(height: 1)
+                    Rectangle().fill(CalendarTheme.ink(0.06)).frame(height: 1)
                 }
                 .frame(height: hourHeight, alignment: .top)
                 .id(hour)
@@ -806,11 +857,11 @@ private struct EventBlock: View {
                 Rectangle().fill(event.color.color).frame(width: 3)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(event.title)
-                        .font(MacPriorityTheme.sans(10.5, weight: .semibold))
-                        .foregroundStyle(MacPriorityTheme.ink(0.9))
+                        .font(CalendarTheme.sans(10.5, weight: .semibold))
+                        .foregroundStyle(CalendarTheme.ink(0.9))
                     Text(shortTime(event.start))
-                        .font(MacPriorityTheme.sans(9.5))
-                        .foregroundStyle(MacPriorityTheme.ink(0.55))
+                        .font(CalendarTheme.sans(9.5))
+                        .foregroundStyle(CalendarTheme.ink(0.55))
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 2)
@@ -818,14 +869,13 @@ private struct EventBlock: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .background(event.color.color.opacity(0.16))
-            .background(MacPriorityTheme.card)
+            .background(CalendarTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showDetail, arrowEdge: .trailing) {
-            EventDetailPopover(event: event)
+            EventDetailPopover(event: event).calendarPopoverPresentation()
         }
     }
 }
-#endif

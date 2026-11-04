@@ -18,15 +18,21 @@ enum PriorityViewMode {
 /// control to mirror) presents `AddTodoForm` full-screen. On macOS it
 /// instead follows that project's turn 3 ("Today" header, tab switcher),
 /// with the mockup's Plot tab replaced by a Calendar tab (Google Calendar or
-/// macOS Calendar) — see CLAUDE.md's platform-branch convention.
+/// macOS Calendar) — see CLAUDE.md's platform-branch convention. On iPhone
+/// the same `CalendarTabView` replaces the queue whenever the phone is held
+/// in landscape (vertical size class compact); portrait always shows the
+/// queue.
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItemModel.createdAt) private var items: [TodoItemModel]
 
     #if os(macOS)
     @State private var viewMode: PriorityViewMode = .list
-    @State private var calendarStore = CalendarStore()
     #endif
+    /// Owned here rather than by `CalendarTabView` so the connection and
+    /// loaded events survive the view being torn down — switching tabs on
+    /// macOS, or rotating back to portrait on iPhone.
+    @State private var calendarStore = CalendarStore()
 
     /// Ranks the fetched models via `PriorityScorer.rank(_:)` — the score is
     /// computed, not stored, and the full list is re-ranked on every view
@@ -51,6 +57,14 @@ struct ContentView: View {
         items.filter { !$0.isDone }.count
     }
 
+    /// Open tasks with a due date, overlaid on the calendar's due days.
+    private var dueTaskMarkers: [DueTaskMarker] {
+        items.compactMap { item in
+            guard !item.isDone, let dueDate = item.dueDate else { return nil }
+            return DueTaskMarker(id: item.id, title: item.title, dueDate: dueDate)
+        }
+    }
+
     var body: some View {
         #if os(macOS)
         macBody
@@ -64,14 +78,6 @@ struct ContentView: View {
     #if os(macOS)
     private var openTotalMinutes: Double {
         items.filter { !$0.isDone }.reduce(0) { $0 + $1.estimatedMinutes }
-    }
-
-    /// Open tasks with a due date, overlaid on the calendar's due days.
-    private var dueTaskMarkers: [DueTaskMarker] {
-        items.compactMap { item in
-            guard !item.isDone, let dueDate = item.dueDate else { return nil }
-            return DueTaskMarker(id: item.id, title: item.title, dueDate: dueDate)
-        }
     }
 
     private var macBody: some View {
@@ -151,6 +157,9 @@ struct ContentView: View {
     // MARK: - iOS
 
     #if os(iOS)
+    /// `.compact` on an iPhone held in landscape (on every model), `.regular`
+    /// in portrait and on iPad — so iPad keeps the queue in both orientations.
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var isAddingTask = false
     /// Non-nil while `AddTodoForm` is presented in edit mode for this task
     /// — set by a double tap on its row (see `queueList`).
@@ -172,6 +181,39 @@ struct ContentView: View {
     }
 
     private var iosBody: some View {
+        Group {
+            if verticalSizeClass == .compact {
+                iosCalendar
+            } else {
+                iosQueue
+            }
+        }
+        .fullScreenCover(isPresented: $isAddingTask) {
+            AddTodoForm(onAdd: addItem)
+        }
+        .fullScreenCover(item: $editingItem) { item in
+            AddTodoForm(
+                editingItem: item.asTodoItem,
+                onSave: { title, minutes, importance, dueDate in
+                    updateItem(item, title: title, minutes: minutes, importance: importance, dueDate: dueDate)
+                }
+            )
+        }
+    }
+
+    /// Landscape: the calendar, full-bleed on black. Horizontal padding is
+    /// on top of the safe area, so the notch/Dynamic Island side stays clear.
+    private var iosCalendar: some View {
+        CalendarTabView(store: calendarStore, dueTasks: dueTaskMarkers)
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 4)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(IOSPriorityTheme.background.ignoresSafeArea())
+            .environment(\.colorScheme, .dark)
+    }
+
+    private var iosQueue: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 header
@@ -189,17 +231,6 @@ struct ContentView: View {
             }
             .background(IOSPriorityTheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-        }
-        .fullScreenCover(isPresented: $isAddingTask) {
-            AddTodoForm(onAdd: addItem)
-        }
-        .fullScreenCover(item: $editingItem) { item in
-            AddTodoForm(
-                editingItem: item.asTodoItem,
-                onSave: { title, minutes, importance, dueDate in
-                    updateItem(item, title: title, minutes: minutes, importance: importance, dueDate: dueDate)
-                }
-            )
         }
     }
 

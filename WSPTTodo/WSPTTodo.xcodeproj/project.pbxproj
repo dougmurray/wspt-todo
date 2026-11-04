@@ -23,10 +23,12 @@
 		8241B14525BD0B16A8790474 /* WSPTCore in Frameworks */ = {isa = PBXBuildFile; productRef = 692418665412532CD635E493 /* WSPTCore */; };
 		92F0D61F958C6E7C47760E49 /* MacPriorityTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */; };
 		948FDA0A766D98610D301F5E /* EditTaskPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */; };
+		9A97A7A52F1B43C1DBA7C446 /* CalendarTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 312F67A2D8140CA21A51E1F9 /* CalendarTheme.swift */; };
 		9B8091977E7CC809885B434C /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64899B35FC48D3982F06F531 /* EmptyStateView.swift */; };
 		B04D2E840A47EB7EA076B385 /* CalendarModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9455C71822FFFDDBABCB80 /* CalendarModels.swift */; };
 		B5A9B989EAD512E4E868D937 /* TodoItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B87898EFE9894DF363F90AC /* TodoItemModel.swift */; };
 		B6E93D2F43A4061F7BC51826 /* PriorityListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58810AB13C7047D4CFA43ECA /* PriorityListView.swift */; };
+		C0999D176CD7CF36D4AC9C9C /* CalendarTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 312F67A2D8140CA21A51E1F9 /* CalendarTheme.swift */; };
 		C1CF9F5C5ACD224E295B91CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 841F4FE1B5066CAD485B227C /* Assets.xcassets */; };
 		CA4E6E1A688DC2F800C7B587 /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7CC8AD59846D29B245D6F2 /* TodoRow.swift */; };
 		CF2FA845EBAB930A3ADD52E6 /* AddTodoForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */; };
@@ -45,6 +47,7 @@
 		1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTaskPopover.swift; sourceTree = "<group>"; };
 		200C7A83B71E2717EA9E6530 /* WSPTTodoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSPTTodoApp.swift; sourceTree = "<group>"; };
 		2435B5213F424A5C98655FC0 /* CalendarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTabView.swift; sourceTree = "<group>"; };
+		312F67A2D8140CA21A51E1F9 /* CalendarTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTheme.swift; sourceTree = "<group>"; };
 		4327FC17EA1A4AEABCA23A5B /* MacPriorityTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPriorityTheme.swift; sourceTree = "<group>"; };
 		4B87898EFE9894DF363F90AC /* TodoItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemModel.swift; sourceTree = "<group>"; };
 		58810AB13C7047D4CFA43ECA /* PriorityListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriorityListView.swift; sourceTree = "<group>"; };
@@ -113,6 +116,7 @@
 			children = (
 				7F30558D27F1EB5C4B54D877 /* AddTodoForm.swift */,
 				2435B5213F424A5C98655FC0 /* CalendarTabView.swift */,
+				312F67A2D8140CA21A51E1F9 /* CalendarTheme.swift */,
 				5CD2B12CCC45DE49FFE7493B /* ContentView.swift */,
 				1F754F85E6E93A4E50F2B9C7 /* EditTaskPopover.swift */,
 				64899B35FC48D3982F06F531 /* EmptyStateView.swift */,
@@ -267,6 +271,7 @@
 				B04D2E840A47EB7EA076B385 /* CalendarModels.swift in Sources */,
 				0117447509A92CE40E2715ED /* CalendarStore.swift in Sources */,
 				2E665A0C4C335CC3F182534F /* CalendarTabView.swift in Sources */,
+				C0999D176CD7CF36D4AC9C9C /* CalendarTheme.swift in Sources */,
 				3669E953321DFFDFA258BA6C /* ContentView.swift in Sources */,
 				12ED6F792AC5C78A223F4026 /* EditTaskPopover.swift in Sources */,
 				07665E3DF994483DE2F56C73 /* EmptyStateView.swift in Sources */,
@@ -288,6 +293,7 @@
 				F74D65375DC5D60EC8E9B7D8 /* CalendarModels.swift in Sources */,
 				5C46DB429C64544F36D739EE /* CalendarStore.swift in Sources */,
 				F31E216140A7D1C0E616DBB9 /* CalendarTabView.swift in Sources */,
+				9A97A7A52F1B43C1DBA7C446 /* CalendarTheme.swift in Sources */,
 				609174E3839CEE732D686BDE /* ContentView.swift in Sources */,
 				948FDA0A766D98610D301F5E /* EditTaskPopover.swift in Sources */,
 				9B8091977E7CC809885B434C /* EmptyStateView.swift in Sources */,

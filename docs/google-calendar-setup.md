@@ -1,12 +1,15 @@
 # Google Calendar setup
 
-The macOS app's **Calendar** tab can sign in to Google Calendar directly (read-only). Google requires
+The app's Calendar view (the **Calendar** tab on macOS; on iPhone, shown when the phone is turned to
+landscape) can sign in to Google Calendar directly (read-only). The same iOS-type client ID works on
+both platforms. Google requires
 every app to have its own OAuth client ID, which you create once in Google Cloud Console. Do these
 steps in order, signed in to your own Google account.
 
-> **Don't want to do this?** Add your Google account in **System Settings → Internet Accounts**, then
-> on the Calendar tab choose **macOS Calendar → Allow Calendar Access**. Your Google calendars show up
-> through the Calendar app with no client ID needed.
+> **Don't want to do this?** Add your Google account in **System Settings → Internet Accounts** (Mac)
+> or **Settings → Apps → Calendar → Calendar Accounts** (iPhone), then in the Calendar view choose
+> **macOS Calendar / iPhone Calendar → Allow Calendar Access**. Your Google calendars show up through
+> the Calendar app with no client ID needed.
 
 ## 1. Create a project
 

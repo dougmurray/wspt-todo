@@ -1,4 +1,3 @@
-#if os(macOS)
 import Foundation
 import CryptoKit
 import Security
@@ -427,4 +426,3 @@ private enum Keychain {
         SecItemDelete(baseQuery as CFDictionary)
     }
 }
-#endif

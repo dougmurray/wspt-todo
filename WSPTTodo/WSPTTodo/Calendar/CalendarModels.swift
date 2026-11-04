@@ -1,4 +1,3 @@
-#if os(macOS)
 import SwiftUI
 
 /// Where the Calendar tab's events come from.
@@ -6,8 +5,9 @@ import SwiftUI
 /// - `google`: talks to the Google Calendar REST API directly, after an
 ///   in-app OAuth sign-in (see `GoogleCalendarClient`).
 /// - `system`: reads through EventKit — whatever accounts are configured in
-///   the macOS Calendar app (iCloud, Exchange, and Google accounts added
-///   under System Settings → Internet Accounts).
+///   the system Calendar app (iCloud, Exchange, and Google accounts added
+///   under System Settings → Internet Accounts on macOS, or Settings → Apps
+///   → Calendar → Calendar Accounts on iOS).
 enum CalendarSource: String, CaseIterable, Identifiable, Sendable {
     case google
     case system
@@ -17,7 +17,11 @@ enum CalendarSource: String, CaseIterable, Identifiable, Sendable {
     var displayName: String {
         switch self {
         case .google: "Google Calendar"
+        #if os(macOS)
         case .system: "macOS Calendar"
+        #else
+        case .system: "iPhone Calendar"
+        #endif
         }
     }
 }
@@ -100,4 +104,3 @@ struct DueTaskMarker: Identifiable, Hashable {
     let title: String
     let dueDate: Date
 }
-#endif
